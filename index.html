@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Giftoo Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #f8fafc; }
+    .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    #tx-list::-webkit-scrollbar { width: 6px; }
+    #tx-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 max-w-xl mx-auto space-y-5 relative overflow-x-hidden">
+
+  <!-- HEADER -->
+  <header class="glass-card p-4 rounded-3xl flex justify-between items-center animate__animated animate__fadeInDown">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center bg-slate-900/60 p-2 rounded-2xl border border-slate-700/50">
+        <svg class="h-8 w-auto" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="20" width="60" height="55" rx="6" fill="#65C9C0"/>
+          <rect x="2" y="15" width="66" height="12" rx="3" fill="#65C9C0"/>
+          <path d="M25 15C20 5 30 5 35 15Z" fill="#F472B6"/>
+          <path d="M45 15C50 5 40 5 35 15Z" fill="#F472B6"/>
+          <circle cx="25" cy="40" r="4" fill="#000"/>
+          <circle cx="45" cy="40" r="4" fill="#000"/>
+          <path d="M30 48Q35 53 40 48Z" fill="#F472B6" stroke="#000" stroke-width="1.5"/>
+          <path d="M12 52Q20 45 22 52" stroke="#65C9C0" stroke-width="4" stroke-linecap="round"/>
+          <path d="M58 52Q50 45 48 52" stroke="#65C9C0" stroke-width="4" stroke-linecap="round"/>
+          <text x="78" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" fill="#42C7BB">giftoo</text>
+          <path d="M218 20L224 14" stroke="#42C7BB" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M226 26L234 24" stroke="#42C7BB" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M224 33L231 36" stroke="#42C7BB" stroke-width="3.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="text-right">
+        <span id="live-time" class="text-base font-extrabold text-indigo-400 block leading-tight">--:--</span>
+        <span id="user-badge" class="text-[11px] text-sky-400 font-bold block">User</span>
+      </div>
+
+      <button onclick="toggleSidebar()" class="w-10 h-10 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white rounded-2xl flex items-center justify-center text-lg font-bold transition active:scale-90 shadow-md">
+        ⋮
+      </button>
+    </div>
+  </header>
+
+  <!-- OVERVIEW CARDS -->
+  <section class="grid grid-cols-3 gap-3 animate__animated animate__fadeInUp">
+    <div class="glass-card p-4 rounded-2xl flex flex-col justify-between">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Balance</span>
+      <h2 id="total-balance" class="text-lg font-black text-white mt-2">₹0</h2>
+    </div>
+    <div class="glass-card p-4 rounded-2xl flex flex-col justify-between border-emerald-500/20">
+      <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Income</span>
+      <h2 id="total-income" class="text-lg font-black text-emerald-400 mt-2">+₹0</h2>
+    </div>
+    <div class="glass-card p-4 rounded-2xl flex flex-col justify-between border-rose-500/20">
+      <span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Expenses</span>
+      <h2 id="total-expense" class="text-lg font-black text-rose-400 mt-2">-₹0</h2>
+    </div>
+  </section>
+
+  <!-- EXPENSE PIE CHART + DATE FILTER -->
+  <section class="glass-card p-5 rounded-3xl space-y-4 animate__animated animate__fadeInUp">
+    <div class="flex justify-between items-center">
+      <span class="text-xs font-bold text-sky-400 uppercase tracking-wider block">📊 Expense Breakdown</span>
+      
+      <!-- DATE FILTER -->
+      <select id="date-filter" onchange="fetchTransactions()" class="bg-slate-900/90 border border-slate-700 text-xs text-white rounded-xl px-3 py-1.5 font-bold focus:outline-none focus:border-sky-500">
+        <option value="all">All Time</option>
+        <option value="1w">Last 1 Week</option>
+        <option value="1m">Last 1 Month</option>
+        <option value="3m">Last 3 Months</option>
+        <option value="1y">Last 1 Year</option>
+      </select>
+    </div>
+
+    <div class="w-full h-48 flex items-center justify-center">
+      <canvas id="expenseChart"></canvas>
+    </div>
+  </section>
+
+  <!-- LOG TRANSACTION FORM (USER ONLY) -->
+  <section id="user-logger-section" class="glass-card p-6 rounded-3xl space-y-4 animate__animated animate__fadeInUp">
+    <h2 class="text-base font-extrabold text-slate-100 flex items-center gap-2">
+      <span>➕</span> Log New Transaction
+    </h2>
+
+    <form id="tx-form" onsubmit="addUserTransaction(event)" class="space-y-3">
+      <div>
+        <input type="text" id="tx-title" placeholder="Description (Optional)" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <input type="number" id="tx-amount" placeholder="Amount (₹)" required min="1" step="any" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500">
+        
+        <select id="tx-type" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-sky-500">
+          <option value="expense">Expense 💸</option>
+          <option value="income">Income 💰</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-sky-500">
+          <option value="Auto 🛺">Auto 🛺</option>
+          <option value="Food 🍔">Food 🍔</option>
+          <option value="Party Payment 🥳">Party Payment 🥳</option>
+          <option value="Shopping 🛍️">Shopping 🛍️</option>
+          <option value="Bills ⚡">Bills ⚡</option>
+          <option value="Other Expenses 📦">Other Expenses 📦</option>
+        </select>
+
+        <button type="submit" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold rounded-xl text-sm transition active:scale-95 flex items-center justify-center">
+          Add Transaction
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- RECENT TRANSACTIONS / ACTIVITY FEED -->
+  <section class="glass-card p-6 rounded-3xl space-y-4 animate__animated animate__fadeInUp">
+    <div class="flex justify-between items-center">
+      <h2 id="feed-title" class="text-base font-extrabold text-slate-100 flex items-center gap-2">
+        <span>📜</span> Recent Transactions
+      </h2>
+      <button onclick="exportPDF()" class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3.5 py-1.5 rounded-xl font-bold hover:bg-emerald-500/20 transition">
+        Export PDF 📄
+      </button>
+    </div>
+
+    <ul id="tx-list" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></ul>
+  </section>
+
+  <!-- SIDEBAR OVERLAY & DRAWER -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 hidden transition-opacity duration-300"></div>
+
+  <aside id="sidebar" class="fixed top-0 right-0 h-full w-80 bg-slate-900/95 border-l border-slate-800 p-6 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between shadow-2xl overflow-y-auto">
+    <div class="space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <h3 class="font-extrabold text-white text-base">Settings Menu</h3>
+          <p id="sidebar-user-info" class="text-xs text-sky-400 font-bold">@User</p>
+        </div>
+        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white font-bold text-lg p-1">✕</button>
+      </div>
+
+      <div id="admin-options" class="hidden space-y-3">
+        <span class="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest block">Admin Operations</span>
+        
+        <a href="/admin" class="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold py-3 px-4 rounded-xl text-xs flex items-center gap-2 transition active:scale-95 block">
+          <span>👑</span> Admin Portal (Assign Expenses)
+        </a>
+
+        <button onclick="openCreateUserModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold py-3 px-4 rounded-xl text-xs flex items-center gap-2 transition active:scale-95">
+          <span>👤+</span> Create User Credentials
+        </button>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-800 pt-4 mt-6">
+      <a href="/logout" class="w-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-extrabold py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 transition active:scale-95">
+        <span>🚪</span> Sign Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- CREATE USER MODAL -->
+  <div id="user-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card p-6 rounded-3xl w-full max-w-xs space-y-4 animate__animated animate__zoomIn">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-extrabold text-amber-400">Create New User</h3>
+        <button onclick="closeCreateUserModal()" class="text-slate-400 font-bold text-sm">✕</button>
+      </div>
+
+      <form onsubmit="createNewUser(event)" class="space-y-3">
+        <div>
+          <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Username</label>
+          <input type="text" id="new-username" required placeholder="Enter username" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Password</label>
+          <input type="password" id="new-password" required placeholder="Enter password" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+        </div>
+
+        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition active:scale-95 shadow-md">
+          Save Credentials
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let transactionsData = [];
+    let myChart = null;
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('live-time').innerText = now.toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true
+      });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const isOpen = !sidebar.classList.contains('translate-x-full');
+
+      if (isOpen) {
+        sidebar.classList.add('translate-x-full');
+        overlay.classList.add('hidden');
+      } else {
+        sidebar.classList.remove('translate-x-full');
+        overlay.classList.remove('hidden');
+      }
+    }
+
+    function openCreateUserModal() { document.getElementById('user-modal').classList.remove('hidden'); }
+    function closeCreateUserModal() { document.getElementById('user-modal').classList.add('hidden'); }
+
+    async function initSession() {
+      try {
+        const res = await fetch('/api/session');
+        if (!res.ok) return window.location.href = '/login';
+        currentUser = await res.json();
+
+        document.getElementById('user-badge').innerText = `@${currentUser.username}`;
+        document.getElementById('sidebar-user-info').innerText = `@${currentUser.username} (${currentUser.role})`;
+
+        if (currentUser.role === 'admin') {
+          document.getElementById('admin-options').classList.remove('hidden');
+          document.getElementById('user-logger-section').classList.add('hidden');
+          document.getElementById('feed-title').innerHTML = `<span>👑</span> Global Activity Feed`;
+        } else {
+          document.getElementById('user-logger-section').classList.remove('hidden');
+        }
+
+        fetchTransactions();
+      } catch (err) {
+        window.location.href = '/login';
+      }
+    }
+
+    async function fetchTransactions() {
+      const filter = document.getElementById('date-filter').value;
+      const res = await fetch(`/api/transactions?filter=${filter}`);
+      transactionsData = await res.json();
+      renderUI();
+      renderPieChart();
+    }
+
+    function renderUI() {
+      const list = document.getElementById('tx-list');
+      list.innerHTML = '';
+      let incomeSum = 0, expenseSum = 0;
+
+      if (transactionsData.length === 0) {
+        list.innerHTML = `<li class="text-center py-6 text-xs text-slate-500 font-medium">No transactions found for this timeframe.</li>`;
+      }
+
+      transactionsData.forEach((tx) => {
+        if (tx.type === 'income') incomeSum += Number(tx.amount);
+        else expenseSum += Number(tx.amount);
+
+        const isIncome = tx.type === 'income';
+        const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
+        const li = document.createElement('li');
+        li.className = `flex items-center justify-between p-3.5 bg-slate-900/80 rounded-2xl border ${isIncome ? 'border-emerald-500/30' : 'border-slate-800'} transition`;
+
+        // Tapping on user's handle opens their Profile Page
+        li.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl ${isIncome ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-sm">
+              ${isIncome ? '⇣' : '⇡'}
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-200 leading-tight">${escapeHtml(tx.title)}</p>
+              <p class="text-[10px] font-semibold text-slate-400">
+                ${currentUser.role === 'admin' ? `<a href="/profile?id=${tx.userId}" class="text-amber-400 hover:underline font-bold">@${tx.username}</a> • ` : ''}${tx.category} • ${dateStr}
+              </p>
+            </div>
+          </div>
+          <span class="text-sm font-extrabold ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
+            ${isIncome ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}
+          </span>
+        `;
+        list.appendChild(li);
+      });
+
+      const balance = incomeSum - expenseSum;
+      document.getElementById('total-balance').innerText = `₹${balance.toLocaleString('en-IN')}`;
+      document.getElementById('total-income').innerText = `+₹${incomeSum.toLocaleString('en-IN')}`;
+      document.getElementById('total-expense').innerText = `-₹${expenseSum.toLocaleString('en-IN')}`;
+    }
+
+    async function addUserTransaction(e) {
+      e.preventDefault();
+      const title = document.getElementById('tx-title').value.trim();
+      const amount = document.getElementById('tx-amount').value;
+      const type = document.getElementById('tx-type').value;
+      const category = document.getElementById('tx-category').value;
+
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, amount, type, category })
+      });
+
+      if (res.ok) {
+        document.getElementById('tx-title').value = '';
+        document.getElementById('tx-amount').value = '';
+        fetchTransactions();
+      }
+    }
+
+    async function createNewUser(e) {
+      e.preventDefault();
+      const username = document.getElementById('new-username').value.trim();
+      const password = document.getElementById('new-password').value;
+
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('new-username').value = '';
+        document.getElementById('new-password').value = '';
+        closeCreateUserModal();
+        alert('User created!');
+      } else {
+        alert(data.error || 'Failed to create user');
+      }
+    }
+
+    function renderPieChart() {
+      const categories = {};
+      transactionsData.filter(t => t.type === 'expense').forEach(t => {
+        const catName = t.category.split(' ')[0];
+        categories[catName] = (categories[catName] || 0) + Number(t.amount);
+      });
+
+      const labels = Object.keys(categories);
+      const data = Object.values(categories);
+
+      const ctx = document.getElementById('expenseChart').getContext('2d');
+      if (myChart) myChart.destroy();
+
+      myChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels.length > 0 ? labels : ['No Data'],
+          datasets: [{
+            data: data.length > 0 ? data : [1],
+            backgroundColor: data.length > 0 ? ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'] : ['#334155']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#f8fafc', font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    function exportPDF() {
+      if (transactionsData.length === 0) return alert('No transactions available.');
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.setTextColor(30, 41, 59);
+      doc.text("Giftoo - Financial Statement", 14, 20);
+
+      const tableRows = transactionsData.map((tx, idx) => [
+        idx + 1,
+        tx.username,
+        new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+        tx.title,
+        tx.category.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, ''),
+        tx.type.toUpperCase(),
+        `${tx.type === 'income' ? '+' : '-'} Rs.${Number(tx.amount).toLocaleString('en-IN')}`
+      ]);
+
+      doc.autoTable({
+        startY: 30,
+        head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']],
+        body: tableRows,
+        theme: 'striped',
+        headStyles: { fillColor: [66, 199, 187] },
+        styles: { fontSize: 8 }
+      });
+
+      doc.save(`Giftoo_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    initSession();
+  </script>
+</body>
+</html>
