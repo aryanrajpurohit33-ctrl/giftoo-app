@@ -3,17 +3,22 @@ const session = require('express-session');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static manifest
+app.get('/manifest.json', (req, res) => {
+  res.sendFile(path.join(__dirname, 'manifest.json'));
+});
 
 // Persistent Session Configuration (30 Days Expiry)
 app.use(session({
   secret: 'giftoo_secret_key_2026',
   resave: true,
   saveUninitialized: true,
-  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // Keeps user logged in across restarts/refreshes
+  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
 }));
 
 // In-Memory Database
@@ -107,21 +112,19 @@ app.post('/api/admin/users', (req, res) => {
   res.json({ success: true, user: { id: newUser.id, username: newUser.username, role: newUser.role } });
 });
 
-// Get Transactions (Supports filtering by target user ID and date ranges)
+// Get Transactions
 app.get('/api/transactions', (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
 
   const { userId, filter } = req.query;
   let filteredTx = [...transactions];
 
-  // Restrict regular users to seeing only their own data
   if (req.session.user.role !== 'admin') {
     filteredTx = filteredTx.filter(t => t.userId === req.session.user.id);
   } else if (userId) {
     filteredTx = filteredTx.filter(t => t.userId === parseInt(userId));
   }
 
-  // Date Range Filtering
   if (filter && filter !== 'all') {
     const now = new Date();
     let cutoff = new Date();
@@ -167,5 +170,5 @@ app.post('/api/transactions', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log('🚀 Giftoo App live at http://localhost:' + PORT);
+  console.log(`🚀 Giftoo App live on port ${PORT}`);
 });

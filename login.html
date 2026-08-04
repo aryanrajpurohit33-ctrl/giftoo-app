@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f17">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
   <title>Sign In - Giftoo</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -20,26 +24,11 @@
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
-
-    /* Hide AppMint / Third-Party Overlay Watermarks */
-    div[class*="appmint"], 
-    div[id*="appmint"],
-    [href*="appmint"],
-    .appmint-watermark,
-    div[style*="Made with"],
-    div:has(> a[href*="appmint"]) {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-    }
   </style>
 </head>
 <body class="min-h-screen p-4 w-full max-w-md mx-auto flex items-center justify-center relative overflow-x-hidden">
 
   <main class="w-full glass-card p-6 rounded-3xl space-y-6 animate__animated animate__fadeInUp shadow-2xl">
-    
-    <!-- BRAND LOGO HEADER -->
     <div class="flex flex-col items-center justify-center text-center space-y-2">
       <div class="flex items-center bg-slate-900/80 p-2.5 rounded-2xl border border-slate-700/60 shadow-inner">
         <svg class="h-9 w-auto" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -53,9 +42,6 @@
           <path d="M12 52Q20 45 22 52" stroke="#65C9C0" stroke-width="4" stroke-linecap="round"/>
           <path d="M58 52Q50 45 48 52" stroke="#65C9C0" stroke-width="4" stroke-linecap="round"/>
           <text x="78" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" fill="#42C7BB">giftoo</text>
-          <path d="M218 20L224 14" stroke="#42C7BB" stroke-width="3.5" stroke-linecap="round"/>
-          <path d="M226 26L234 24" stroke="#42C7BB" stroke-width="3.5" stroke-linecap="round"/>
-          <path d="M224 33L231 36" stroke="#42C7BB" stroke-width="3.5" stroke-linecap="round"/>
         </svg>
       </div>
       <div>
@@ -64,10 +50,8 @@
       </div>
     </div>
 
-    <!-- ERROR MESSAGE -->
     <div id="error-box" class="hidden bg-rose-500/10 border border-rose-500/30 text-rose-400 p-3 rounded-xl text-xs font-bold text-center"></div>
 
-    <!-- LOGIN FORM -->
     <form onsubmit="handleLogin(event)" class="space-y-4">
       <div>
         <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Username</label>
@@ -83,7 +67,6 @@
         Sign In 🔑
       </button>
     </form>
-
   </main>
 
   <script>
