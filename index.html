@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f17">
+  <link rel="manifest" href="/manifest.json">
   <title>Giftoo Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -91,7 +93,6 @@
         </select>
       </div>
 
-      <!-- Constrained Chart Height Container -->
       <div class="w-full h-44 flex items-center justify-center relative my-1">
         <canvas id="expenseChart"></canvas>
       </div>
@@ -188,8 +189,8 @@
 
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        for (let registration of registrations) { registration.unregister(); }
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
       });
     }
 
@@ -366,17 +367,8 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          layout: {
-            padding: { top: 5, bottom: 5 }
-          },
-          plugins: {
-            legend: {
-              labels: {
-                color: '#f8fafc',
-                font: { size: 10 }
-              }
-            }
-          }
+          layout: { padding: { top: 5, bottom: 5 } },
+          plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
         }
       });
     }
