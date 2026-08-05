@@ -7,29 +7,30 @@
   <link rel="manifest" href="/manifest.json">
   <title>Sign In - Giftoo</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
+    * { box-sizing: border-box; }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background-color: #0b0f17;
       color: #f8fafc;
-      padding-top: env(safe-area-inset-top, 16px);
-      padding-bottom: env(safe-area-inset-bottom, 16px);
+      margin: 0;
+      padding: 0;
     }
     .glass-card {
-      background: rgba(30, 41, 59, 0.65);
-      backdrop-filter: blur(12px);
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
   </style>
 </head>
-<body class="min-h-screen p-4 w-full max-w-md mx-auto flex items-center justify-center relative overflow-x-hidden">
+<body class="min-h-screen w-full flex items-center justify-center p-4">
 
-  <main class="w-full glass-card p-6 rounded-3xl space-y-6 animate__animated animate__fadeInUp shadow-2xl">
-    <div class="flex flex-col items-center justify-center text-center space-y-2">
-      <div class="flex items-center bg-slate-900/80 p-2.5 rounded-2xl border border-slate-700/60 shadow-inner">
-        <svg class="h-9 w-auto" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <div class="glass-card p-6 rounded-3xl w-full max-w-sm space-y-5 text-center shadow-2xl">
+    <!-- GIFTOO LOGO -->
+    <div class="flex justify-center">
+      <div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-700/60 inline-flex items-center">
+        <svg class="h-10 w-auto" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="5" y="20" width="60" height="55" rx="6" fill="#65C9C0"/>
           <rect x="2" y="15" width="66" height="12" rx="3" fill="#65C9C0"/>
           <path d="M25 15C20 5 30 5 35 15Z" fill="#F472B6"/>
@@ -40,57 +41,43 @@
           <text x="78" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" fill="#42C7BB">giftoo</text>
         </svg>
       </div>
-      <div>
-        <h1 class="text-xl font-extrabold text-white mt-2">Welcome Back</h1>
-        <p class="text-xs font-semibold text-slate-400">Sign in with authorized credentials</p>
-      </div>
     </div>
 
-    <div id="error-box" class="hidden bg-rose-500/10 border border-rose-500/30 text-rose-400 p-3 rounded-xl text-xs font-bold text-center"></div>
+    <div>
+      <h1 class="text-xl font-extrabold text-white">Welcome Back</h1>
+      <p class="text-xs text-slate-400 mt-1">Sign in with authorized credentials</p>
+    </div>
 
-    <form onsubmit="handleLogin(event)" class="space-y-4">
+    <form onsubmit="handleLogin(event)" class="space-y-3 text-left">
       <div>
         <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Username</label>
-        <input type="text" id="username" required placeholder="Enter username" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+        <input type="text" id="login-username" required placeholder="Enter username" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-sky-500">
       </div>
 
       <div>
         <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Password</label>
-        <input type="password" id="password" required placeholder="Enter password" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition">
+        <input type="password" id="login-password" required placeholder="Enter password" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-sky-500">
       </div>
 
-      <button type="submit" id="submit-btn" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-3.5 rounded-xl text-sm transition active:scale-95 shadow-lg flex items-center justify-center gap-2 mt-2">
+      <div id="error-msg" class="text-xs text-rose-400 font-bold text-center hidden"></div>
+
+      <button type="submit" id="btn-submit" class="w-full bg-sky-400 hover:bg-sky-300 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition duration-200 mt-2">
         Sign In 🔑
       </button>
     </form>
-  </main>
+  </div>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
-    }
-
-    // Check if user is already logged in
-    async function checkExistingSession() {
-      try {
-        const res = await fetch('/api/session');
-        if (res.ok) {
-          window.location.replace('/');
-        }
-      } catch (err) {}
-    }
-    checkExistingSession();
-
     async function handleLogin(e) {
       e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      const errorBox = document.getElementById('error-box');
-      const submitBtn = document.getElementById('submit-btn');
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errorMsg = document.getElementById('error-msg');
+      const btnSubmit = document.getElementById('btn-submit');
 
-      errorBox.classList.add('hidden');
-      submitBtn.disabled = true;
-      submitBtn.innerText = 'Signing in...';
+      errorMsg.classList.add('hidden');
+      btnSubmit.innerText = 'Signing in...';
+      btnSubmit.disabled = true;
 
       try {
         const res = await fetch('/api/login', {
@@ -101,19 +88,19 @@
 
         const data = await res.json();
 
-        if (res.ok && data.success) {
-          window.location.replace('/');
+        if (data.success) {
+          window.location.href = '/';
         } else {
-          errorBox.innerText = data.message || 'Invalid credentials';
-          errorBox.classList.remove('hidden');
-          submitBtn.disabled = false;
-          submitBtn.innerText = 'Sign In 🔑';
+          errorMsg.innerText = data.message || 'Invalid credentials';
+          errorMsg.classList.remove('hidden');
+          btnSubmit.innerText = 'Sign In 🔑';
+          btnSubmit.disabled = false;
         }
       } catch (err) {
-        errorBox.innerText = 'Server connection failed';
-        errorBox.classList.remove('hidden');
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'Sign In 🔑';
+        errorMsg.innerText = 'Server connection failed';
+        errorMsg.classList.remove('hidden');
+        btnSubmit.innerText = 'Sign In 🔑';
+        btnSubmit.disabled = false;
       }
     }
   </script>
