@@ -13,13 +13,13 @@
   "theme_color": "#0b0f17",
   "icons": [
     {
-      "src": "https://giftoo-app.onrender.com/icon.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/4213/4213179.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "https://giftoo-app.onrender.com/icon.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/4213/4213179.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
