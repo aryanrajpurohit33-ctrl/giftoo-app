@@ -11,35 +11,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #0b0f17;
-      color: #f8fafc;
-      padding-top: env(safe-area-inset-top, 12px);
-      padding-bottom: env(safe-area-inset-bottom, 16px);
-    }
-    .glass-card {
-      background: rgba(30, 41, 59, 0.65);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    #tx-list::-webkit-scrollbar { width: 6px; }
-    #tx-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-
-    /* Hide Overlays */
-    div[class*="appmint"], div[id*="appmint"], [href*="appmint"], .appmint-watermark, div[style*="Made with"] {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #f8fafc; }
+    .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    div[class*="appmint"], div[id*="appmint"], [href*="appmint"], .appmint-watermark, div[style*="Made with"] { display: none !important; }
   </style>
 </head>
 <body class="min-h-screen px-3 py-2 w-full max-w-md mx-auto space-y-3.5 relative overflow-x-hidden flex flex-col justify-between">
 
   <div class="space-y-3.5 w-full">
     <!-- HEADER -->
-    <header class="glass-card p-3 rounded-2xl flex justify-between items-center animate__animated animate__fadeInDown">
+    <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
       <div class="flex items-center gap-2">
         <div class="flex items-center bg-slate-900/60 p-1.5 rounded-xl border border-slate-700/50">
           <svg class="h-7 w-auto" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -50,8 +31,6 @@
             <circle cx="25" cy="40" r="4" fill="#000"/>
             <circle cx="45" cy="40" r="4" fill="#000"/>
             <path d="M30 48Q35 53 40 48Z" fill="#F472B6" stroke="#000" stroke-width="1.5"/>
-            <path d="M12 52Q20 45 22 52" stroke="#65C9C0" stroke-width="4" stroke-linecap="round"/>
-            <path d="M58 52Q50 45 48 52" stroke="#65C9C0" stroke-width="4" stroke-linecap="round"/>
             <text x="78" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" fill="#42C7BB">giftoo</text>
           </svg>
         </div>
@@ -63,33 +42,33 @@
           <span id="user-badge" class="text-[10px] text-sky-400 font-bold block">User</span>
         </div>
 
-        <button onclick="toggleSidebar()" class="w-9 h-9 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white rounded-xl flex items-center justify-center text-base font-bold transition active:scale-90 shadow-md">
+        <button onclick="toggleSidebar()" class="w-9 h-9 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white rounded-xl flex items-center justify-center text-base font-bold">
           ⋮
         </button>
       </div>
     </header>
 
     <!-- OVERVIEW CARDS -->
-    <section class="grid grid-cols-3 gap-2 animate__animated animate__fadeInUp">
-      <div class="glass-card p-3 rounded-2xl flex flex-col justify-between">
-        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Balance</span>
+    <section class="grid grid-cols-3 gap-2">
+      <div class="glass-card p-3 rounded-2xl">
+        <span class="text-[9px] font-bold text-slate-400 uppercase">Total Balance</span>
         <h2 id="total-balance" class="text-base font-black text-white mt-1">₹0</h2>
       </div>
-      <div class="glass-card p-3 rounded-2xl flex flex-col justify-between border-emerald-500/20">
-        <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Income</span>
+      <div class="glass-card p-3 rounded-2xl border-emerald-500/20">
+        <span class="text-[9px] font-bold text-emerald-400 uppercase">Income</span>
         <h2 id="total-income" class="text-base font-black text-emerald-400 mt-1">+₹0</h2>
       </div>
-      <div class="glass-card p-3 rounded-2xl flex flex-col justify-between border-rose-500/20">
-        <span class="text-[9px] font-bold text-rose-400 uppercase tracking-wider">Expenses</span>
+      <div class="glass-card p-3 rounded-2xl border-rose-500/20">
+        <span class="text-[9px] font-bold text-rose-400 uppercase">Expenses</span>
         <h2 id="total-expense" class="text-base font-black text-rose-400 mt-1">-₹0</h2>
       </div>
     </section>
 
-    <!-- EXPENSE PIE CHART + DATE FILTER -->
-    <section class="glass-card p-4 rounded-2xl space-y-2 animate__animated animate__fadeInUp">
+    <!-- EXPENSE PIE CHART -->
+    <section class="glass-card p-4 rounded-2xl space-y-2">
       <div class="flex justify-between items-center">
-        <span class="text-xs font-bold text-sky-400 uppercase tracking-wider block">📊 Expense Breakdown</span>
-        <select id="date-filter" onchange="fetchTransactions()" class="bg-slate-900/90 border border-slate-700 text-[11px] text-white rounded-lg px-2 py-1 font-bold focus:outline-none focus:border-sky-500">
+        <span class="text-xs font-bold text-sky-400 uppercase block">📊 Expense Breakdown</span>
+        <select id="date-filter" onchange="fetchTransactions()" class="bg-slate-900/90 border border-slate-700 text-[11px] text-white rounded-lg px-2 py-1 font-bold">
           <option value="all">All Time</option>
           <option value="1w">Last 1 Week</option>
           <option value="1m">Last 1 Month</option>
@@ -103,28 +82,20 @@
       </div>
     </section>
 
-    <!-- LOG TRANSACTION FORM (USER ONLY) -->
-    <section id="user-logger-section" class="glass-card p-4 rounded-2xl space-y-3 animate__animated animate__fadeInUp">
-      <h2 class="text-sm font-extrabold text-slate-100 flex items-center gap-2">
-        <span>➕</span> Log New Transaction
-      </h2>
-
+    <!-- LOG TRANSACTION FORM -->
+    <section id="user-logger-section" class="glass-card p-4 rounded-2xl space-y-3">
+      <h2 class="text-sm font-extrabold text-slate-100 flex items-center gap-2">➕ Log New Transaction</h2>
       <form id="tx-form" onsubmit="addUserTransaction(event)" class="space-y-2.5">
-        <div>
-          <input type="text" id="tx-title" placeholder="Description (Optional)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500">
-        </div>
-
+        <input type="text" id="tx-title" placeholder="Description (Optional)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
         <div class="grid grid-cols-2 gap-2">
-          <input type="number" id="tx-amount" placeholder="Amount (₹)" required min="1" step="any" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500">
-          
-          <select id="tx-type" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+          <input type="number" id="tx-amount" placeholder="Amount (₹)" required min="1" step="any" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+          <select id="tx-type" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
             <option value="expense">Expense 💸</option>
             <option value="income">Income 💰</option>
           </select>
         </div>
-
         <div class="grid grid-cols-2 gap-2">
-          <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+          <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
             <option value="Auto 🛺">Auto 🛺</option>
             <option value="Food 🍔">Food 🍔</option>
             <option value="Party Payment 🥳">Party Payment 🥳</option>
@@ -132,61 +103,54 @@
             <option value="Bills ⚡">Bills ⚡</option>
             <option value="Other Expenses 📦">Other Expenses 📦</option>
           </select>
-
-          <button type="submit" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold rounded-lg text-xs transition active:scale-95 flex items-center justify-center py-2">
-            Add Transaction
-          </button>
+          <button type="submit" class="bg-sky-500 text-slate-950 font-extrabold rounded-lg text-xs py-2">Add Transaction</button>
         </div>
       </form>
     </section>
 
-    <!-- RECENT TRANSACTIONS / ACTIVITY FEED -->
-    <section class="glass-card p-4 rounded-2xl space-y-3 animate__animated animate__fadeInUp">
+    <!-- TRANSACTIONS LIST -->
+    <section class="glass-card p-4 rounded-2xl space-y-3">
       <div class="flex justify-between items-center">
-        <h2 id="feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">
-          <span>📜</span> Recent Transactions
-        </h2>
-        <button onclick="exportPDF()" class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-bold hover:bg-emerald-500/20 transition">
-          Export PDF 📄
-        </button>
+        <h2 id="feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Recent Transactions</h2>
+        <button onclick="exportPDF()" class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-bold">Export PDF 📄</button>
       </div>
-
       <ul id="tx-list" class="space-y-2 max-h-56 overflow-y-auto pr-1"></ul>
     </section>
   </div>
 
-  <!-- SIDEBAR OVERLAY & DRAWER -->
-  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 hidden transition-opacity duration-300"></div>
+  <!-- SIDEBAR DRAWER -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 hidden"></div>
 
-  <aside id="sidebar" class="fixed top-0 right-0 h-full w-72 bg-slate-900/95 border-l border-slate-800 p-5 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between shadow-2xl overflow-y-auto">
+  <aside id="sidebar" class="fixed top-0 right-0 h-full w-72 bg-slate-900/95 border-l border-slate-800 p-5 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between shadow-2xl">
     <div class="space-y-5">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
           <h3 class="font-extrabold text-white text-sm">Settings Menu</h3>
           <p id="sidebar-user-info" class="text-xs text-sky-400 font-bold">@User</p>
         </div>
-        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white font-bold text-base p-1">✕</button>
+        <button onclick="toggleSidebar()" class="text-slate-400 font-bold text-base">✕</button>
       </div>
 
-      <div id="admin-options" class="hidden space-y-2.5">
+      <!-- ADMIN OPTIONS (Explicity structured) -->
+      <div id="admin-options" class="space-y-2.5">
         <span class="text-[9px] font-extrabold text-amber-400 uppercase tracking-widest block">Admin Operations</span>
         
-        <a href="/admin" class="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 transition active:scale-95 block">
+        <a href="/admin" class="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 block">
           <span>👑</span> Admin Portal (Assign Expenses)
         </a>
 
-        <a href="/users" class="w-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 transition active:scale-95 block">
+        <a href="/users" class="w-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 block">
           <span>👥</span> Manage Users List
         </a>
 
-        <button onclick="openCreateUserModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 transition active:scale-95">
+        <button onclick="openCreateUserModal()" class="w-full bg-slate-800 text-slate-200 border border-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2">
           <span>👤+</span> Create User Credentials
         </button>
       </div>
     </div>
 
     <div class="border-t border-slate-800 pt-3 mt-4">
-      <a href="/logout" class="w-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-extrabold py-3 rounded-xl text-xs flex items-center justify-center gap-2 transition active:scale-95">
+      <a href="/logout" class="w-full bg-rose-500/10 text-rose-400 border border-rose-500/30 font-extrabold py-3 rounded-xl text-xs flex items-center justify-center gap-2 block text-center">
         <span>🚪</span> Sign Out
       </a>
     </div>
@@ -194,25 +158,15 @@
 
   <!-- CREATE USER MODAL -->
   <div id="user-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card p-5 rounded-2xl w-full max-w-xs space-y-3 animate__animated animate__zoomIn">
+    <div class="glass-card p-5 rounded-2xl w-full max-w-xs space-y-3">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
         <h3 class="text-xs font-extrabold text-amber-400">Create New User</h3>
         <button onclick="closeCreateUserModal()" class="text-slate-400 font-bold text-xs">✕</button>
       </div>
-
       <form onsubmit="createNewUser(event)" class="space-y-2.5">
-        <div>
-          <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Username</label>
-          <input type="text" id="new-username" required placeholder="Enter username" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
-        </div>
-        <div>
-          <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Password</label>
-          <input type="password" id="new-password" required placeholder="Enter password" class="w-full bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
-        </div>
-
-        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-2.5 rounded-lg text-xs transition active:scale-95 shadow-md">
-          Save Credentials
-        </button>
+        <input type="text" id="new-username" required placeholder="Username" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+        <input type="password" id="new-password" required placeholder="Password" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+        <button type="submit" class="w-full bg-amber-500 text-slate-950 font-extrabold py-2.5 rounded-lg text-xs">Save Credentials</button>
       </form>
     </div>
   </div>
@@ -223,8 +177,7 @@
     let myChart = null;
 
     function updateClock() {
-      const now = new Date();
-      document.getElementById('live-time').innerText = now.toLocaleTimeString('en-IN', {
+      document.getElementById('live-time').innerText = new Date().toLocaleTimeString('en-IN', {
         timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true
       });
     }
@@ -257,11 +210,13 @@
         document.getElementById('user-badge').innerText = `@${currentUser.username}`;
         document.getElementById('sidebar-user-info').innerText = `@${currentUser.username} (${currentUser.role})`;
 
+        const adminOptions = document.getElementById('admin-options');
         if (currentUser.role === 'admin') {
-          document.getElementById('admin-options').classList.remove('hidden');
+          adminOptions.style.display = 'block';
           document.getElementById('user-logger-section').classList.add('hidden');
           document.getElementById('feed-title').innerHTML = `<span>👑</span> Global Activity Feed`;
         } else {
+          adminOptions.style.display = 'none';
           document.getElementById('user-logger-section').classList.remove('hidden');
         }
 
@@ -285,7 +240,7 @@
       let incomeSum = 0, expenseSum = 0;
 
       if (transactionsData.length === 0) {
-        list.innerHTML = `<li class="text-center py-5 text-xs text-slate-500 font-medium">No transactions found for this timeframe.</li>`;
+        list.innerHTML = `<li class="text-center py-5 text-xs text-slate-500 font-medium">No transactions found.</li>`;
       }
 
       transactionsData.forEach((tx) => {
@@ -296,7 +251,7 @@
         const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
         const li = document.createElement('li');
-        li.className = `flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border ${isIncome ? 'border-emerald-500/30' : 'border-slate-800'} transition`;
+        li.className = `flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border ${isIncome ? 'border-emerald-500/30' : 'border-slate-800'}`;
 
         li.innerHTML = `
           <div class="flex items-center gap-2.5">
@@ -304,7 +259,7 @@
               ${isIncome ? '⇣' : '⇡'}
             </div>
             <div>
-              <p class="text-xs font-bold text-slate-200 leading-tight">${escapeHtml(tx.title)}</p>
+              <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
               <p class="text-[9px] font-semibold text-slate-400">
                 ${currentUser.role === 'admin' ? `<a href="/profile?id=${tx.userId}" class="text-amber-400 hover:underline font-bold">@${tx.username}</a> • ` : ''}${tx.category} • ${dateStr}
               </p>
@@ -390,47 +345,28 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#f8fafc', font: { size: 10 } } }
-          }
+          plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
         }
       });
     }
 
     function exportPDF() {
       if (transactionsData.length === 0) return alert('No transactions available.');
-
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-
-      doc.setFontSize(18);
-      doc.setTextColor(30, 41, 59);
-      doc.text("Giftoo - Financial Statement", 14, 20);
+      doc.text("Giftoo Statement", 14, 20);
 
       const tableRows = transactionsData.map((tx, idx) => [
-        idx + 1,
-        tx.username,
-        new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-        tx.title,
-        tx.category.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, ''),
-        tx.type.toUpperCase(),
-        `${tx.type === 'income' ? '+' : '-'} Rs.${Number(tx.amount).toLocaleString('en-IN')}`
+        idx + 1, tx.username, new Date(tx.date).toLocaleDateString('en-IN'), tx.title, tx.category, tx.type.toUpperCase(), `Rs.${tx.amount}`
       ]);
 
       doc.autoTable({
         startY: 30,
         head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']],
-        body: tableRows,
-        theme: 'striped',
-        headStyles: { fillColor: [66, 199, 187] },
-        styles: { fontSize: 8 }
+        body: tableRows
       });
 
-      doc.save(`Giftoo_Report_${new Date().toISOString().slice(0,10)}.pdf`);
-    }
-
-    function escapeHtml(text) {
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      doc.save(`Giftoo_Report.pdf`);
     }
 
     initSession();
