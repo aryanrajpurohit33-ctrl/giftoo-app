@@ -1,26 +1,21 @@
-const CACHE_NAME = 'giftoo-v3';
+self.addEventListener('push', event => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'Giftoo Expense Alert 💸';
+  const options = {
+    body: data.body || 'A new transaction was logged.',
+    icon: '/icon.png',
+    badge: '/icon.png',
+    vibrate: [200, 100, 200]
+  };
 
-self.addEventListener('install', (e) => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+  event.waitUntil(
+    self.registration.showNotification(title, options)
   );
 });
 
-// Network-first fetch handler required for PWA installability
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('/')
   );
 });

@@ -3,11 +3,21 @@ const session = require('express-session');
 const path = require('path');
 const fs = require('fs');
 const mongoose = require('mongoose');
+const webpush = require('web-push');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://aryanrajpurohit33_db_user:O5OjBvjJxB6FNYnn@cluster0.2fdvz9w.mongodb.net/giftoo?retryWrites=true&w=majority";
+
+const PUBLIC_VAPID_KEY = process.env.PUBLIC_VAPID_KEY || "YOUR_FULL_PUBLIC_KEY";
+const PRIVATE_VAPID_KEY = process.env.PRIVATE_VAPID_KEY || "5AKBgSf7LAfJ0wNB05tmCMMZxBWQaVrQ8_rftVlVbM";
+
+webpush.setVapidDetails(
+  'mailto:admin@giftoo.app',
+  PUBLIC_VAPID_KEY,
+  PRIVATE_VAPID_KEY
+);
 
 mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
   .then(() => console.log('✅ Connected permanently to MongoDB Atlas'))
@@ -29,8 +39,14 @@ const transactionSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now }
 });
 
+const subscriptionSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  subscription: { type: Object, required: true }
+});
+
 const User = mongoose.model('User', userSchema);
 const Transaction = mongoose.model('Transaction', transactionSchema);
+const Subscription = mongoose.model('Subscription', subscriptionSchema);
 
 async function seedDefaultUsers() {
   try {
@@ -100,6 +116,20 @@ app.get('/users', (req, res) => {
 app.get('/profile', (req, res) => {
   if (!req.session.user) return res.redirect('/login');
   res.sendFile(path.join(__dirname, 'profile.html'));
+});
+
+app.post('/api/subscribe', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    await Subscription.findOneAndUpdate(
+      { userId: req.session.user.id },
+      { subscription: req.body },
+      { upsert: true, new: true }
+    );
+    res.status(201).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Subscription failed' });
+  }
 });
 
 app.post('/api/login', async (req, res) => {
@@ -251,6 +281,19 @@ app.post('/api/transactions', async (req, res) => {
       amount: parseFloat(amount),
       type,
       category
+    });
+
+    const adminUsers = await User.find({ role: 'admin' });
+    const adminIds = adminUsers.map(u => u._id.toString());
+    const subscriptions = await Subscription.find({ userId: { $in: adminIds } });
+
+    const pushPayload = JSON.stringify({
+      title: `Expense Alert 💸`,
+      body: `@${assignedUser.username} spent ₹${parseFloat(amount)} on ${category}`
+    });
+
+    subscriptions.forEach(sub => {
+      webpush.sendNotification(sub.subscription, pushPayload).catch(err => console.error('Push Error:', err));
     });
 
     res.json({ success: true, transaction: newTx });

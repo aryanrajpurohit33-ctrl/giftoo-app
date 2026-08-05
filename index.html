@@ -192,10 +192,29 @@
   </div>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js');
-      });
+    const PUBLIC_VAPID_KEY = "YOUR_FULL_PUBLIC_KEY";
+
+    async function subscribeToPush() {
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+        try {
+          const register = await navigator.serviceWorker.register('/sw.js');
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') return;
+
+          const subscription = await register.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: PUBLIC_VAPID_KEY
+          });
+
+          await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subscription)
+          });
+        } catch (err) {
+          console.error("Push subscription error:", err);
+        }
+      }
     }
 
     let currentUser = null;
@@ -247,6 +266,7 @@
         }
 
         fetchTransactions();
+        subscribeToPush();
       } catch (err) {
         window.location.href = '/login';
       }
