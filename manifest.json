@@ -13,16 +13,16 @@
   "theme_color": "#0b0f17",
   "icons": [
     {
-      "src": "https://i.ibb.co/6P2T3y4/giftoo-logo.png",
+      "src": "/icon.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "https://i.ibb.co/6P2T3y4/giftoo-logo.png",
+      "src": "/icon.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "categories": ["finance", "utilities"]

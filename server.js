@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,19 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static manifest
 app.get('/manifest.json', (req, res) => {
   res.sendFile(path.join(__dirname, 'manifest.json'));
+});
+
+// Serve Icon
+app.get('/icon.png', (req, res) => {
+  const iconPath = path.join(__dirname, 'icon.png');
+  if (fs.existsSync(iconPath)) {
+    res.sendFile(iconPath);
+  } else {
+    // Fallback pixel if icon file missing
+    const img = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+    res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': img.length });
+    res.end(img);
+  }
 });
 
 // Persistent Session Configuration (30 Days Expiry)
