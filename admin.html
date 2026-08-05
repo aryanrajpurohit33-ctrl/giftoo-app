@@ -2,134 +2,151 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Giftoo Admin Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f17">
+  <link rel="manifest" href="/manifest.json">
+  <title>Admin Portal - Giftoo</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #f8fafc; }
     .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
   </style>
 </head>
-<body class="min-h-screen p-4 md:p-6 max-w-xl mx-auto space-y-5">
+<body class="min-h-screen w-full p-3 flex flex-col justify-between max-w-2xl mx-auto">
 
-  <!-- HEADER -->
-  <header class="glass-card p-4 rounded-3xl flex justify-between items-center animate__animated animate__fadeInDown">
-    <div class="flex items-center gap-2">
-      <a href="/" class="p-2 bg-slate-800 rounded-xl text-xs font-bold hover:bg-slate-700 transition">← Back</a>
-      <h1 class="text-base font-extrabold text-amber-400">Admin Portal 👑</h1>
-    </div>
-    <span id="live-time" class="text-sm font-extrabold text-indigo-400">--:--</span>
-  </header>
-
-  <!-- ASSIGN EXPENSE TO USER FORM -->
-  <section class="glass-card p-6 rounded-3xl space-y-4 border-amber-500/30 animate__animated animate__fadeInUp">
-    <h2 class="text-base font-extrabold text-amber-400 flex items-center gap-2">
-      <span>💸</span> Assign Expense to User
-    </h2>
-
-    <form onsubmit="addAdminTransaction(event)" class="space-y-3">
-      <div>
-        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Select Target User</label>
-        <select id="admin-target-user" required class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
-          <!-- Filtered user options -->
-        </select>
+  <div class="space-y-4">
+    <!-- HEADER -->
+    <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <a href="/" class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-xs font-bold text-slate-300">←</a>
+        <h1 class="text-sm font-extrabold text-amber-400">👑 Admin Portal</h1>
       </div>
+      <span class="text-xs font-extrabold text-sky-400">Assign Expenses</span>
+    </header>
 
-      <div>
-        <input type="text" id="admin-tx-title" placeholder="Description (Optional)" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
-      </div>
+    <!-- ASSIGN FORM -->
+    <section class="glass-card p-4 rounded-2xl space-y-3">
+      <h2 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider">Assign Expense / Income to User</h2>
+      <form onsubmit="assignTransaction(event)" class="space-y-3">
+        <div>
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Select User</label>
+          <select id="user-select" required class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
+            <option value="">Loading users...</option>
+          </select>
+        </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <input type="number" id="admin-tx-amount" placeholder="Amount (₹)" required min="1" step="any" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
-        
-        <select id="admin-tx-type" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
-          <option value="expense">Expense 💸</option>
-          <option value="income">Income 💰</option>
-        </select>
-      </div>
+        <div>
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Description / Title</label>
+          <input type="text" id="assign-title" placeholder="e.g. Lunch expense" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+        </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <select id="admin-tx-category" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500">
-          <option value="Auto 🛺">Auto 🛺</option>
-          <option value="Food 🍔">Food 🍔</option>
-          <option value="Party Payment 🥳">Party Payment 🥳</option>
-          <option value="Shopping 🛍️">Shopping 🛍️</option>
-          <option value="Bills ⚡">Bills ⚡</option>
-          <option value="Other Expenses 📦">Other Expenses 📦</option>
-        </select>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Amount (₹)</label>
+            <input type="number" id="assign-amount" required min="1" step="any" placeholder="Amount" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+          </div>
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Type</label>
+            <select id="assign-type" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
+              <option value="expense">Expense 💸</option>
+              <option value="income">Income 💰</option>
+            </select>
+          </div>
+        </div>
 
-        <button type="submit" id="submit-btn" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl text-sm transition active:scale-95 flex items-center justify-center shadow-md">
-          Assign Expense 🚀
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Category</label>
+            <select id="assign-category" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
+              <option value="Auto 🛺">Auto 🛺</option>
+              <option value="Food 🍔">Food 🍔</option>
+              <option value="Party Payment 🥳">Party Payment 🥳</option>
+              <option value="Shopping 🛍️">Shopping 🛍️</option>
+              <option value="Bills ⚡">Bills ⚡</option>
+              <option value="Other Expenses 📦">Other Expenses 📦</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Date (Max -7 days)</label>
+            <input type="date" id="assign-date" required class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition duration-200 mt-2">
+          Assign Transaction 🚀
         </button>
-      </div>
-    </form>
-  </section>
+      </form>
+    </section>
+  </div>
 
   <script>
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('live-time').innerText = now.toLocaleTimeString('en-IN', {
-        timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true
-      });
+    function setupDateLimits() {
+      const dateInput = document.getElementById('assign-date');
+      const today = new Date();
+      const pastWeek = new Date();
+      pastWeek.setDate(today.getDate() - 7);
+
+      const todayStr = today.toISOString().split('T')[0];
+      const pastWeekStr = pastWeek.toISOString().split('T')[0];
+
+      dateInput.value = todayStr;
+      dateInput.max = todayStr;
+      dateInput.min = pastWeekStr;
     }
-    setInterval(updateClock, 1000);
-    updateClock();
 
-    async function loadTargetUsers() {
-      const res = await fetch('/api/admin/users');
-      if (!res.ok) return window.location.href = '/';
-      const data = await res.json();
-      const select = document.getElementById('admin-target-user');
-      const submitBtn = document.getElementById('submit-btn');
-      select.innerHTML = '';
+    async function initAdmin() {
+      const sessionRes = await fetch('/api/session');
+      if (!sessionRes.ok) return window.location.href = '/login';
+      const user = await sessionRes.json();
+      if (user.role !== 'admin') return window.location.href = '/';
 
-      // Filter out admin users
-      const regularUsers = data.filter(u => u.role !== 'admin');
+      const usersRes = await fetch('/api/admin/users');
+      const users = await usersRes.json();
 
-      if (regularUsers.length === 0) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'No standard users registered yet';
-        select.appendChild(opt);
-        select.disabled = true;
-        submitBtn.disabled = true;
-        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        return;
-      }
+      const userSelect = document.getElementById('user-select');
+      userSelect.innerHTML = '<option value="">-- Select Target User --</option>';
 
-      regularUsers.forEach(u => {
+      users.forEach(u => {
         const opt = document.createElement('option');
         opt.value = u.id;
-        opt.textContent = `@${u.username}`;
-        select.appendChild(opt);
+        opt.innerText = `@${u.username} (${u.role})`;
+        userSelect.appendChild(opt);
       });
+
+      setupDateLimits();
     }
 
-    async function addAdminTransaction(e) {
+    async function assignTransaction(e) {
       e.preventDefault();
-      const targetUserId = document.getElementById('admin-target-user').value;
-      const title = document.getElementById('admin-tx-title').value.trim();
-      const amount = document.getElementById('admin-tx-amount').value;
-      const type = document.getElementById('admin-tx-type').value;
-      const category = document.getElementById('admin-tx-category').value;
+      const targetUserId = document.getElementById('user-select').value;
+      const title = document.getElementById('assign-title').value.trim();
+      const amount = document.getElementById('assign-amount').value;
+      const type = document.getElementById('assign-type').value;
+      const category = document.getElementById('assign-category').value;
+      const date = document.getElementById('assign-date').value;
 
-      if (!targetUserId) return alert('Select a valid user.');
+      if (!targetUserId) return alert('Please select a user');
 
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetUserId, title, amount, type, category })
+        body: JSON.stringify({ targetUserId, title, amount, type, category, date })
       });
 
       if (res.ok) {
-        alert('Expense successfully logged for user!');
-        window.location.href = '/';
+        alert('Transaction assigned successfully!');
+        document.getElementById('assign-title').value = '';
+        document.getElementById('assign-amount').value = '';
+        setupDateLimits();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to assign transaction');
       }
     }
 
-    loadTargetUsers();
+    initAdmin();
   </script>
 </body>
 </html>

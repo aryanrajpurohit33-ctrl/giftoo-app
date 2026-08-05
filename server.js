@@ -105,16 +105,21 @@ app.get('/profile', (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = await User.findOne({ username, password });
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'Username and password required' });
+    }
+
+    const user = await User.findOne({ username, password }).maxTimeMS(4000);
 
     if (user) {
       req.session.user = { id: user._id.toString(), username: user.username, role: user.role };
       return res.json({ success: true, role: user.role });
     }
 
-    res.status(401).json({ success: false, message: 'Invalid Username or Password' });
+    return res.status(401).json({ success: false, message: 'Invalid Username or Password' });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Database Connection Error' });
+    console.error('Login Handler Error:', err);
+    return res.status(500).json({ success: false, message: 'Database Connection Error. Try again.' });
   }
 });
 
@@ -234,7 +239,7 @@ app.post('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const { targetUserId, title, amount, type, category } = req.body;
+    const { targetUserId, title, amount, type, category, date } = req.body;
     if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Invalid amount' });
 
     let assignedUser = req.session.user;
@@ -244,13 +249,28 @@ app.post('/api/transactions', async (req, res) => {
       if (foundUser) assignedUser = { id: foundUser._id.toString(), username: foundUser.username };
     }
 
+    // Validate 7 days limit on date
+    let selectedDate = new Date();
+    if (date) {
+      const parsedDate = new Date(date);
+      const now = new Date();
+      const pastWeek = new Date();
+      pastWeek.setDate(now.getDate() - 7);
+      pastWeek.setHours(0, 0, 0, 0);
+
+      if (parsedDate >= pastWeek && parsedDate <= now) {
+        selectedDate = parsedDate;
+      }
+    }
+
     const newTx = await Transaction.create({
       userId: assignedUser.id,
       username: assignedUser.username,
       title: title !== '' ? title : category.split(' ')[0],
       amount: parseFloat(amount),
       type,
-      category
+      category,
+      date: selectedDate
     });
 
     res.json({ success: true, transaction: newTx });

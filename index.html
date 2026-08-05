@@ -103,6 +103,7 @@
       <h2 class="text-sm font-extrabold text-slate-100 flex items-center gap-2">➕ Log New Transaction</h2>
       <form id="tx-form" onsubmit="addUserTransaction(event)" class="space-y-2.5">
         <input type="text" id="tx-title" placeholder="Description (Optional)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+        
         <div class="grid grid-cols-2 gap-2">
           <input type="number" id="tx-amount" placeholder="Amount (₹)" required min="1" step="any" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
           <select id="tx-type" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
@@ -110,6 +111,7 @@
             <option value="income">Income 💰</option>
           </select>
         </div>
+
         <div class="grid grid-cols-2 gap-2">
           <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
             <option value="Auto 🛺">Auto 🛺</option>
@@ -119,8 +121,12 @@
             <option value="Bills ⚡">Bills ⚡</option>
             <option value="Other Expenses 📦">Other Expenses 📦</option>
           </select>
-          <button type="submit" class="bg-sky-500 text-slate-950 font-extrabold rounded-lg text-xs py-2">Add Transaction</button>
+
+          <!-- DATE SELECTION (Max 7 days past) -->
+          <input type="date" id="tx-date" required class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
         </div>
+
+        <button type="submit" class="w-full bg-sky-500 text-slate-950 font-extrabold rounded-lg text-xs py-2.5 mt-1">Add Transaction</button>
       </form>
     </section>
 
@@ -192,34 +198,24 @@
   </div>
 
   <script>
-    const PUBLIC_VAPID_KEY = "YOUR_FULL_PUBLIC_KEY";
-
-    async function subscribeToPush() {
-      if ('serviceWorker' in navigator && 'PushManager' in window) {
-        try {
-          const register = await navigator.serviceWorker.register('/sw.js');
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted') return;
-
-          const subscription = await register.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: PUBLIC_VAPID_KEY
-          });
-
-          await fetch('/api/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(subscription)
-          });
-        } catch (err) {
-          console.error("Push subscription error:", err);
-        }
-      }
-    }
-
     let currentUser = null;
     let transactionsData = [];
     let myChart = null;
+
+    // SETUP DATE RANGE LIMITS (Today to -7 days)
+    function setupDateLimits() {
+      const dateInput = document.getElementById('tx-date');
+      const today = new Date();
+      const pastWeek = new Date();
+      pastWeek.setDate(today.getDate() - 7);
+
+      const todayStr = today.toISOString().split('T')[0];
+      const pastWeekStr = pastWeek.toISOString().split('T')[0];
+
+      dateInput.value = todayStr;
+      dateInput.max = todayStr;
+      dateInput.min = pastWeekStr;
+    }
 
     function updateClock() {
       document.getElementById('live-time').innerText = new Date().toLocaleTimeString('en-IN', {
@@ -265,8 +261,8 @@
           document.getElementById('user-logger-section').classList.remove('hidden');
         }
 
+        setupDateLimits();
         fetchTransactions();
-        subscribeToPush();
       } catch (err) {
         window.location.href = '/login';
       }
@@ -330,16 +326,18 @@
       const amount = document.getElementById('tx-amount').value;
       const type = document.getElementById('tx-type').value;
       const category = document.getElementById('tx-category').value;
+      const date = document.getElementById('tx-date').value;
 
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, amount, type, category })
+        body: JSON.stringify({ title, amount, type, category, date })
       });
 
       if (res.ok) {
         document.getElementById('tx-title').value = '';
         document.getElementById('tx-amount').value = '';
+        setupDateLimits();
         fetchTransactions();
       }
     }
