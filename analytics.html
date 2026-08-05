@@ -111,6 +111,7 @@
 
   <script>
     let rawTransactions = [];
+    let currentFiltered = [];
     let usersList = [];
     let chartInstance = null;
 
@@ -145,7 +146,7 @@
       const selectedTime = document.getElementById('time-filter').value;
       const selectedCat = document.getElementById('category-filter').value;
 
-      let filtered = rawTransactions.filter(t => t.type === 'expense');
+      let filtered = rawTransactions;
 
       if (selectedUser !== 'all') {
         filtered = filtered.filter(t => t.userId === selectedUser);
@@ -166,15 +167,17 @@
         filtered = filtered.filter(t => new Date(t.date) >= cutoff);
       }
 
-      renderMetrics(filtered);
-      renderChart(filtered);
-      renderUserRankings(filtered);
+      currentFiltered = filtered;
+
+      renderMetrics(filtered.filter(t => t.type === 'expense'));
+      renderChart(filtered.filter(t => t.type === 'expense'));
+      renderUserRankings(filtered.filter(t => t.type === 'expense'));
       renderFilteredList(filtered);
     }
 
-    function renderMetrics(data) {
-      const total = data.reduce((acc, curr) => acc + Number(curr.amount), 0);
-      const count = data.length;
+    function renderMetrics(expenseData) {
+      const total = expenseData.reduce((acc, curr) => acc + Number(curr.amount), 0);
+      const count = expenseData.length;
       const avg = count > 0 ? Math.round(total / count) : 0;
 
       document.getElementById('metric-total').innerText = `₹${total.toLocaleString('en-IN')}`;
@@ -185,7 +188,7 @@
     function renderChart(data) {
       const categories = {};
       data.forEach(t => {
-        const cat = t.category.split(' ')[0];
+        const cat = t.category.replace(/[^\x00-\x7F]/g, "").trim();
         categories[cat] = (categories[cat] || 0) + Number(t.amount);
       });
 
@@ -249,6 +252,7 @@
       }
 
       data.forEach(tx => {
+        const isIncome = tx.type === 'income';
         const li = document.createElement('li');
         li.className = 'flex justify-between items-center p-2.5 bg-slate-900/80 rounded-xl border border-slate-800';
         li.innerHTML = `
@@ -256,28 +260,128 @@
             <p class="text-xs font-bold text-slate-200">${tx.title}</p>
             <p class="text-[9px] text-slate-400"><span class="text-amber-400 font-bold">@${tx.username}</span> • ${tx.category} • ${new Date(tx.date).toLocaleDateString('en-IN')}</p>
           </div>
-          <span class="text-xs font-black text-rose-400">-₹${Number(tx.amount).toLocaleString('en-IN')}</span>
+          <span class="text-xs font-black ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
+            ${isIncome ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}
+          </span>
         `;
         list.appendChild(li);
       });
     }
 
     function exportAnalyticsPDF() {
+      if (currentFiltered.length === 0) return alert('No transaction data to export.');
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.text("Giftoo Admin Analytics Report", 14, 20);
 
-      const tableRows = rawTransactions.map((tx, idx) => [
-        idx + 1, tx.username, new Date(tx.date).toLocaleDateString('en-IN'), tx.title, tx.category, `Rs.${tx.amount}`
+      // Clean ASCII strings (strip non-ASCII/emojis for jsPDF compatibility)
+      const cleanText = (str) => String(str || '').replace(/[^\x00-\x7F]/g, "").trim();
+
+      // PDF Date & Header Information
+      const exportTimeStr = new Date().toLocaleString('en-IN', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      });
+
+      let totalExpenses = 0;
+      let totalIncome = 0;
+
+      currentFiltered.forEach(t => {
+        if (t.type === 'income') totalIncome += Number(t.amount);
+        else totalExpenses += Number(t.amount);
+      });
+
+      const netBalance = totalIncome - totalExpenses;
+
+      // DRAW GIFTOO LOGO
+      doc.setFillColor(101, 201, 192); // Teal
+      doc.roundedRect(14, 12, 22, 18, 2, 2, 'F');
+      doc.setFillColor(244, 114, 182); // Pink Bow
+      doc.triangle(21, 12, 25, 7, 25, 12, 'F');
+      doc.triangle(29, 12, 25, 7, 25, 12, 'F');
+      doc.setFillColor(0, 0, 0); // Eyes
+      doc.circle(20, 19, 1.2, 'F');
+      doc.circle(30, 19, 1.2, 'F');
+
+      // BRAND TITLE
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(66, 199, 187);
+      doc.text("giftoo", 40, 24);
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 116, 139);
+      doc.text("Expense Tracker & Financial Report", 40, 29);
+
+      // REPORT TITLE & METADATA
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 41, 59);
+      doc.text("Exported On:", 135, 18);
+      doc.setFont("helvetica", "normal");
+      doc.text(exportTimeStr, 160, 18);
+
+      // SUMMARY CARD
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(14, 35, 182, 24, 3, 3, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(14, 35, 182, 24, 3, 3, 'S');
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+
+      doc.setTextColor(225, 29, 72);
+      doc.text(`Total Expense: Rs.${totalExpenses.toLocaleString('en-IN')}`, 20, 45);
+
+      doc.setTextColor(16, 185, 129);
+      doc.text(`Total Income: +Rs.${totalIncome.toLocaleString('en-IN')}`, 80, 45);
+
+      doc.setTextColor(14, 165, 233);
+      doc.text(`Net Balance: Rs.${netBalance.toLocaleString('en-IN')}`, 145, 45);
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Total Records Logged: ${currentFiltered.length}`, 20, 53);
+
+      // TABLE GENERATION
+      const tableRows = currentFiltered.map((tx, idx) => [
+        idx + 1,
+        cleanText(tx.username),
+        new Date(tx.date).toLocaleDateString('en-IN'),
+        cleanText(tx.title) || 'Expense Log',
+        cleanText(tx.category),
+        tx.type.toUpperCase(),
+        `${tx.type === 'income' ? '+' : '-'}Rs.${Number(tx.amount).toLocaleString('en-IN')}`
       ]);
 
       doc.autoTable({
-        startY: 30,
-        head: [['#', 'User', 'Date', 'Description', 'Category', 'Amount']],
-        body: tableRows
+        startY: 65,
+        head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']],
+        body: tableRows,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [15, 23, 42],
+          textColor: [248, 250, 252],
+          fontStyle: 'bold',
+          fontSize: 9
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [51, 65, 85]
+        },
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 45 },
+          4: { cellWidth: 30 },
+          5: { cellWidth: 20 },
+          6: { cellWidth: 27, fontStyle: 'bold', halign: 'right' }
+        }
       });
 
-      doc.save(`Giftoo_Analytics_Report.pdf`);
+      doc.save(`Giftoo_Financial_Report.pdf`);
     }
 
     init();
