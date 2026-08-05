@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Manage Users - Giftoo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #f8fafc; }
+    .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+  </style>
+</head>
+<body class="min-h-screen p-4 w-full max-w-md mx-auto space-y-4 relative overflow-x-hidden">
+
+  <!-- HEADER -->
+  <header class="glass-card p-4 rounded-2xl flex justify-between items-center animate__animated animate__fadeInDown">
+    <div class="flex items-center gap-2">
+      <a href="/" class="text-sky-400 font-bold text-xs bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700">← Back</a>
+      <h1 class="text-base font-extrabold text-white">Manage Users</h1>
+    </div>
+    <span class="text-xs text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-xl">Admin</span>
+  </header>
+
+  <!-- USER LIST CONTAINER -->
+  <section class="glass-card p-5 rounded-2xl space-y-4 animate__animated animate__fadeInUp">
+    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Registered Users</h2>
+    <ul id="user-list-container" class="space-y-3"></ul>
+  </section>
+
+  <script>
+    async function loadUsers() {
+      const container = document.getElementById('user-list-container');
+      try {
+        const res = await fetch('/api/admin/users');
+        if (!res.ok) return window.location.href = '/';
+        const users = await res.json();
+
+        container.innerHTML = '';
+        users.forEach(user => {
+          const li = document.createElement('li');
+          li.className = "flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border border-slate-800";
+          li.innerHTML = `
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold text-sm">👤</div>
+              <div>
+                <a href="/profile?id=${user.id}" class="text-sm font-extrabold text-white hover:text-sky-400 transition block">@${user.username}</a>
+                <span class="text-[10px] font-bold ${user.role === 'admin' ? 'text-amber-400' : 'text-slate-400'} uppercase">${user.role}</span>
+              </div>
+            </div>
+            ${user.role !== 'admin' ? `
+              <button onclick="deleteUser('${user.id}', '${user.username}')" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-xl font-bold transition active:scale-95">
+                Delete 🗑️
+              </button>
+            ` : '<span class="text-[10px] text-slate-500 font-bold">Protected</span>'}
+          `;
+          container.appendChild(li);
+        });
+      } catch (err) {
+        container.innerHTML = '<li class="text-xs text-rose-400 font-bold text-center py-4">Failed to load users</li>';
+      }
+    }
+
+    async function deleteUser(id, username) {
+      if (!confirm(`Are you sure you want to delete @${username} and all their transactions?`)) return;
+
+      const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        loadUsers();
+      } else {
+        alert(data.error || 'Failed to delete user');
+      }
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>

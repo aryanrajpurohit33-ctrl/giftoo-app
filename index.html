@@ -26,13 +26,8 @@
     #tx-list::-webkit-scrollbar { width: 6px; }
     #tx-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 
-    /* Hide AppMint / Third-Party Overlay Watermarks */
-    div[class*="appmint"], 
-    div[id*="appmint"],
-    [href*="appmint"],
-    .appmint-watermark,
-    div[style*="Made with"],
-    div:has(> a[href*="appmint"]) {
+    /* Hide Overlays */
+    div[class*="appmint"], div[id*="appmint"], [href*="appmint"], .appmint-watermark, div[style*="Made with"] {
       display: none !important;
       visibility: hidden !important;
       opacity: 0 !important;
@@ -58,9 +53,6 @@
             <path d="M12 52Q20 45 22 52" stroke="#65C9C0" stroke-width="4" stroke-linecap="round"/>
             <path d="M58 52Q50 45 48 52" stroke="#65C9C0" stroke-width="4" stroke-linecap="round"/>
             <text x="78" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" fill="#42C7BB">giftoo</text>
-            <path d="M218 20L224 14" stroke="#42C7BB" stroke-width="3.5" stroke-linecap="round"/>
-            <path d="M226 26L234 24" stroke="#42C7BB" stroke-width="3.5" stroke-linecap="round"/>
-            <path d="M224 33L231 36" stroke="#42C7BB" stroke-width="3.5" stroke-linecap="round"/>
           </svg>
         </div>
       </div>
@@ -97,7 +89,6 @@
     <section class="glass-card p-4 rounded-2xl space-y-2 animate__animated animate__fadeInUp">
       <div class="flex justify-between items-center">
         <span class="text-xs font-bold text-sky-400 uppercase tracking-wider block">📊 Expense Breakdown</span>
-        
         <select id="date-filter" onchange="fetchTransactions()" class="bg-slate-900/90 border border-slate-700 text-[11px] text-white rounded-lg px-2 py-1 font-bold focus:outline-none focus:border-sky-500">
           <option value="all">All Time</option>
           <option value="1w">Last 1 Week</option>
@@ -182,6 +173,10 @@
         
         <a href="/admin" class="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 transition active:scale-95 block">
           <span>👑</span> Admin Portal (Assign Expenses)
+        </a>
+
+        <a href="/users" class="w-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 transition active:scale-95 block">
+          <span>👥</span> Manage Users List
         </a>
 
         <button onclick="openCreateUserModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 transition active:scale-95">
