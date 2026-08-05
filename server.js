@@ -54,16 +54,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/sw.js', (req, res) => res.sendFile(path.join(__dirname, 'sw.js')));
 app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
-app.get('/icon.png', (req, res) => {
-  const iconPath = path.join(__dirname, 'icon.png');
-  if (fs.existsSync(iconPath)) {
-    res.sendFile(iconPath);
-  } else {
-    const img = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
-    res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': img.length });
-    res.end(img);
-  }
-});
+app.get('/icon.svg', (req, res) => res.sendFile(path.join(__dirname, 'icon.svg')));
+app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'icon.svg')));
 
 app.use(session({
   secret: 'giftoo_secret_key_2026',
@@ -249,7 +241,6 @@ app.post('/api/transactions', async (req, res) => {
       if (foundUser) assignedUser = { id: foundUser._id.toString(), username: foundUser.username };
     }
 
-    // Validate 7 days limit on date
     let selectedDate = new Date();
     if (date) {
       const parsedDate = new Date(date);

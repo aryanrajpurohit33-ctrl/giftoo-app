@@ -1,29 +1,23 @@
 {
   "short_name": "Giftoo",
-  "name": "Giftoo Expenses",
-  "description": "Giftoo Personal & Shared Expense Tracker",
-  "start_url": "/",
-  "scope": "/",
-  "id": "/",
-  "dir": "ltr",
-  "lang": "en",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0b0f17",
-  "theme_color": "#0b0f17",
+  "name": "Giftoo Expense Tracker",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/4213/4213179.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any"
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/4213/4213179.png",
-      "type": "image/png",
+      "src": "/icon.png",
       "sizes": "512x512",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
-  "categories": ["finance", "utilities"]
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait"
 }
