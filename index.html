@@ -11,14 +11,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     html, body {
-      height: 100%;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
       margin: 0;
       padding: 0;
       background-color: #0b0f17;
       color: #f8fafc;
       font-family: 'Plus Jakarta Sans', sans-serif;
-      overflow-x: hidden;
     }
     .glass-card {
       background: rgba(30, 41, 59, 0.65);
@@ -29,7 +32,7 @@
     #tx-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
   </style>
 </head>
-<body class="min-h-screen w-full p-3 flex flex-col justify-between space-y-3">
+<body class="min-h-screen w-full p-3 flex flex-col justify-between">
 
   <div class="space-y-3 w-full flex-1 flex flex-col justify-between">
     <!-- HEADER -->
@@ -78,7 +81,7 @@
     </section>
 
     <!-- EXPENSE PIE CHART -->
-    <section class="glass-card p-4 rounded-2xl space-y-2 flex-1 flex flex-col justify-between min-h-[220px]">
+    <section class="glass-card p-4 rounded-2xl space-y-2 flex-1 flex flex-col justify-between">
       <div class="flex justify-between items-center">
         <span class="text-xs font-bold text-sky-400 uppercase block">📊 Expense Breakdown</span>
         <select id="date-filter" onchange="fetchTransactions()" class="bg-slate-900/90 border border-slate-700 text-[11px] text-white rounded-lg px-2 py-1 font-bold">
@@ -90,7 +93,7 @@
         </select>
       </div>
 
-      <div class="w-full flex-1 flex items-center justify-center relative min-h-[160px]">
+      <div class="w-full flex-1 flex items-center justify-center relative min-h-[180px]">
         <canvas id="expenseChart"></canvas>
       </div>
     </section>
