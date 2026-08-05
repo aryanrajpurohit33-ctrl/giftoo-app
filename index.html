@@ -11,13 +11,27 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #f8fafc; }
-    .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #0b0f17;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    #tx-list::-webkit-scrollbar { width: 4px; }
+    #tx-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
   </style>
 </head>
-<body class="min-h-screen px-3 py-2 w-full max-w-md mx-auto space-y-3.5 relative overflow-x-hidden flex flex-col justify-between">
+<body class="min-h-screen w-full p-3 flex flex-col justify-between space-y-3">
 
-  <div class="space-y-3.5 w-full">
+  <div class="space-y-3 w-full flex-1 flex flex-col justify-between">
     <!-- HEADER -->
     <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
       <div class="flex items-center gap-2">
@@ -49,22 +63,22 @@
 
     <!-- OVERVIEW CARDS -->
     <section class="grid grid-cols-3 gap-2">
-      <div class="glass-card p-3 rounded-2xl">
+      <div class="glass-card p-3 rounded-2xl flex flex-col justify-between">
         <span class="text-[9px] font-bold text-slate-400 uppercase">Total Balance</span>
         <h2 id="total-balance" class="text-base font-black text-white mt-1">₹0</h2>
       </div>
-      <div class="glass-card p-3 rounded-2xl border-emerald-500/20">
+      <div class="glass-card p-3 rounded-2xl border-emerald-500/20 flex flex-col justify-between">
         <span class="text-[9px] font-bold text-emerald-400 uppercase">Income</span>
         <h2 id="total-income" class="text-base font-black text-emerald-400 mt-1">+₹0</h2>
       </div>
-      <div class="glass-card p-3 rounded-2xl border-rose-500/20">
+      <div class="glass-card p-3 rounded-2xl border-rose-500/20 flex flex-col justify-between">
         <span class="text-[9px] font-bold text-rose-400 uppercase">Expenses</span>
         <h2 id="total-expense" class="text-base font-black text-rose-400 mt-1">-₹0</h2>
       </div>
     </section>
 
     <!-- EXPENSE PIE CHART -->
-    <section class="glass-card p-4 rounded-2xl space-y-2">
+    <section class="glass-card p-4 rounded-2xl space-y-2 flex-1 flex flex-col justify-between min-h-[220px]">
       <div class="flex justify-between items-center">
         <span class="text-xs font-bold text-sky-400 uppercase block">📊 Expense Breakdown</span>
         <select id="date-filter" onchange="fetchTransactions()" class="bg-slate-900/90 border border-slate-700 text-[11px] text-white rounded-lg px-2 py-1 font-bold">
@@ -76,7 +90,7 @@
         </select>
       </div>
 
-      <div class="w-full h-40 flex items-center justify-center">
+      <div class="w-full flex-1 flex items-center justify-center relative min-h-[160px]">
         <canvas id="expenseChart"></canvas>
       </div>
     </section>
@@ -108,12 +122,12 @@
     </section>
 
     <!-- TRANSACTIONS LIST -->
-    <section class="glass-card p-4 rounded-2xl space-y-3">
+    <section class="glass-card p-4 rounded-2xl space-y-3 flex-1 flex flex-col justify-between">
       <div class="flex justify-between items-center">
         <h2 id="feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Recent Transactions</h2>
         <button onclick="exportPDF()" class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-bold">Export PDF 📄</button>
       </div>
-      <ul id="tx-list" class="space-y-2 max-h-56 overflow-y-auto pr-1"></ul>
+      <ul id="tx-list" class="space-y-2 flex-1 max-h-64 overflow-y-auto pr-1"></ul>
     </section>
   </div>
 
@@ -171,7 +185,6 @@
   </div>
 
   <script>
-    // Force wipe service worker cache
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(registrations => {
         for (let registration of registrations) { registration.unregister(); }
