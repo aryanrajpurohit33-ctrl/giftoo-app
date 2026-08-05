@@ -13,7 +13,6 @@
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #f8fafc; }
     .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    div[class*="appmint"], div[id*="appmint"], [href*="appmint"], .appmint-watermark, div[style*="Made with"] { display: none !important; }
   </style>
 </head>
 <body class="min-h-screen px-3 py-2 w-full max-w-md mx-auto space-y-3.5 relative overflow-x-hidden flex flex-col justify-between">
@@ -42,7 +41,7 @@
           <span id="user-badge" class="text-[10px] text-sky-400 font-bold block">User</span>
         </div>
 
-        <button onclick="toggleSidebar()" class="w-9 h-9 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white rounded-xl flex items-center justify-center text-base font-bold">
+        <button onclick="toggleSidebar()" class="w-9 h-9 bg-slate-800/80 border border-slate-700 text-white rounded-xl flex items-center justify-center text-base font-bold">
           ⋮
         </button>
       </div>
@@ -131,7 +130,7 @@
         <button onclick="toggleSidebar()" class="text-slate-400 font-bold text-base">✕</button>
       </div>
 
-      <!-- ADMIN OPTIONS (Explicity structured) -->
+      <!-- ADMIN OPTIONS -->
       <div id="admin-options" class="space-y-2.5">
         <span class="text-[9px] font-extrabold text-amber-400 uppercase tracking-widest block">Admin Operations</span>
         
@@ -172,6 +171,13 @@
   </div>
 
   <script>
+    // Force wipe service worker cache
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) { registration.unregister(); }
+      });
+    }
+
     let currentUser = null;
     let transactionsData = [];
     let myChart = null;
