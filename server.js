@@ -9,7 +9,11 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static manifest
+// Serve static service worker and manifest
+app.get('/sw.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'sw.js'));
+});
+
 app.get('/manifest.json', (req, res) => {
   res.sendFile(path.join(__dirname, 'manifest.json'));
 });
@@ -20,7 +24,6 @@ app.get('/icon.png', (req, res) => {
   if (fs.existsSync(iconPath)) {
     res.sendFile(iconPath);
   } else {
-    // Fallback pixel if icon file missing
     const img = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
     res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': img.length });
     res.end(img);

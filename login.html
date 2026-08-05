@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0b0f17">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="/manifest.json">
   <title>Sign In - Giftoo</title>
@@ -23,6 +24,14 @@
       background: rgba(30, 41, 59, 0.65);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Hide Watermark Overlays */
+    div[class*="appmint"], div[id*="appmint"], [href*="appmint"], .appmint-watermark, div[style*="Made with"] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
     }
   </style>
 </head>
@@ -70,6 +79,10 @@
   </main>
 
   <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+
     async function handleLogin(e) {
       e.preventDefault();
       const username = document.getElementById('username').value.trim();
