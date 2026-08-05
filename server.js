@@ -10,7 +10,8 @@ const PORT = process.env.PORT || 3000;
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://aryanrajpurohit33_db_user:O5OjBvjJxB6FNYnn@cluster0.2fdvz9w.mongodb.net/giftoo?retryWrites=true&w=majority";
 
-const PUBLIC_VAPID_KEY = process.env.PUBLIC_VAPID_KEY || "YOUR_FULL_PUBLIC_KEY";
+// VAPID Keys for Web Push Notifications
+const PUBLIC_VAPID_KEY = process.env.PUBLIC_VAPID_KEY || "YOUR_FULL_PUBLIC_KEY_STARTING_WITH_3Dss";
 const PRIVATE_VAPID_KEY = process.env.PRIVATE_VAPID_KEY || "5AKBgSf7LAfJ0wNB05tmCMMZxBWQaVrQ8_rftVlVbM";
 
 webpush.setVapidDetails(
