@@ -11,9 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     html, body {
       min-height: 100vh;
       min-height: -webkit-fill-available;
@@ -80,8 +78,8 @@
       </div>
     </section>
 
-    <!-- EXPENSE PIE CHART -->
-    <section class="glass-card p-4 rounded-2xl space-y-2 flex-1 flex flex-col justify-between">
+    <!-- COMPACT EXPENSE PIE CHART -->
+    <section class="glass-card p-3.5 rounded-2xl space-y-2">
       <div class="flex justify-between items-center">
         <span class="text-xs font-bold text-sky-400 uppercase block">📊 Expense Breakdown</span>
         <select id="date-filter" onchange="fetchTransactions()" class="bg-slate-900/90 border border-slate-700 text-[11px] text-white rounded-lg px-2 py-1 font-bold">
@@ -93,7 +91,8 @@
         </select>
       </div>
 
-      <div class="w-full flex-1 flex items-center justify-center relative min-h-[180px]">
+      <!-- Constrained Chart Height Container -->
+      <div class="w-full h-44 flex items-center justify-center relative my-1">
         <canvas id="expenseChart"></canvas>
       </div>
     </section>
@@ -130,7 +129,7 @@
         <h2 id="feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Recent Transactions</h2>
         <button onclick="exportPDF()" class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-bold">Export PDF 📄</button>
       </div>
-      <ul id="tx-list" class="space-y-2 flex-1 max-h-64 overflow-y-auto pr-1"></ul>
+      <ul id="tx-list" class="space-y-2 flex-1 max-h-56 overflow-y-auto pr-1"></ul>
     </section>
   </div>
 
@@ -367,7 +366,17 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
+          layout: {
+            padding: { top: 5, bottom: 5 }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#f8fafc',
+                font: { size: 10 }
+              }
+            }
+          }
         }
       });
     }
