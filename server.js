@@ -7,9 +7,9 @@ const mongoose = require('mongoose');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://aryan:O5OjBvjJxB6FNYnn@cluster0.2fdvz9w.mongodb.net/giftoo?retryWrites=true&w=majority";
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://aryanrajpurohit33_db_user:O5OjBvjJxB6FNYnn@cluster0.2fdvz9w.mongodb.net/giftoo?retryWrites=true&w=majority";
 
-mongoose.connect(MONGO_URI)
+mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
   .then(() => console.log('✅ Connected permanently to MongoDB Atlas'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
@@ -87,6 +87,11 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
+app.get('/analytics', (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/');
+  res.sendFile(path.join(__dirname, 'analytics.html'));
+});
+
 app.get('/users', (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/');
   res.sendFile(path.join(__dirname, 'users.html'));
@@ -98,15 +103,19 @@ app.get('/profile', (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({ username, password });
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username, password });
 
-  if (user) {
-    req.session.user = { id: user._id.toString(), username: user.username, role: user.role };
-    return res.json({ success: true, role: user.role });
+    if (user) {
+      req.session.user = { id: user._id.toString(), username: user.username, role: user.role };
+      return res.json({ success: true, role: user.role });
+    }
+
+    res.status(401).json({ success: false, message: 'Invalid Username or Password' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Database Connection Error' });
   }
-
-  res.status(401).json({ success: false, message: 'Invalid Username or Password' });
 });
 
 app.get('/logout', (req, res) => {
@@ -134,8 +143,12 @@ app.get('/api/admin/users', async (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden' });
   }
-  const allUsers = await User.find({}, 'username role');
-  res.json(allUsers.map(u => ({ id: u._id, username: u.username, role: u.role })));
+  try {
+    const allUsers = await User.find({}, 'username role');
+    res.json(allUsers.map(u => ({ id: u._id, username: u.username, role: u.role })));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
 });
 
 app.post('/api/admin/users', async (req, res) => {
@@ -143,14 +156,18 @@ app.post('/api/admin/users', async (req, res) => {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'Required fields missing' });
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Required fields missing' });
 
-  const existing = await User.findOne({ username });
-  if (existing) return res.status(400).json({ error: 'Username exists' });
+    const existing = await User.findOne({ username });
+    if (existing) return res.status(400).json({ error: 'Username exists' });
 
-  const newUser = await User.create({ username, password, role: 'user' });
-  res.json({ success: true, user: { id: newUser._id, username: newUser.username, role: newUser.role } });
+    const newUser = await User.create({ username, password, role: 'user' });
+    res.json({ success: true, user: { id: newUser._id, username: newUser.username, role: newUser.role } });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create user' });
+  }
 });
 
 app.delete('/api/admin/users/:id', async (req, res) => {
@@ -175,63 +192,71 @@ app.delete('/api/admin/users/:id', async (req, res) => {
 app.get('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { userId, filter } = req.query;
-  let query = {};
+  try {
+    const { userId, filter } = req.query;
+    let query = {};
 
-  if (req.session.user.role !== 'admin') {
-    query.userId = req.session.user.id;
-  } else if (userId) {
-    query.userId = userId;
+    if (req.session.user.role !== 'admin') {
+      query.userId = req.session.user.id;
+    } else if (userId) {
+      query.userId = userId;
+    }
+
+    if (filter && filter !== 'all') {
+      const now = new Date();
+      let cutoff = new Date();
+
+      if (filter === '1w') cutoff.setDate(now.getDate() - 7);
+      else if (filter === '1m') cutoff.setMonth(now.getMonth() - 1);
+      else if (filter === '3m') cutoff.setMonth(now.getMonth() - 3);
+      else if (filter === '1y') cutoff.setFullYear(now.getFullYear() - 1);
+
+      query.date = { $gte: cutoff };
+    }
+
+    const transactions = await Transaction.find(query).sort({ date: -1 });
+    res.json(transactions.map(t => ({
+      id: t._id,
+      userId: t.userId,
+      username: t.username,
+      title: t.title,
+      amount: t.amount,
+      type: t.type,
+      category: t.category,
+      date: t.date
+    })));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch transactions' });
   }
-
-  if (filter && filter !== 'all') {
-    const now = new Date();
-    let cutoff = new Date();
-
-    if (filter === '1w') cutoff.setDate(now.getDate() - 7);
-    else if (filter === '1m') cutoff.setMonth(now.getMonth() - 1);
-    else if (filter === '3m') cutoff.setMonth(now.getMonth() - 3);
-    else if (filter === '1y') cutoff.setFullYear(now.getFullYear() - 1);
-
-    query.date = { $gte: cutoff };
-  }
-
-  const transactions = await Transaction.find(query).sort({ date: -1 });
-  res.json(transactions.map(t => ({
-    id: t._id,
-    userId: t.userId,
-    username: t.username,
-    title: t.title,
-    amount: t.amount,
-    type: t.type,
-    category: t.category,
-    date: t.date
-  })));
 });
 
 app.post('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { targetUserId, title, amount, type, category } = req.body;
-  if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Invalid amount' });
+  try {
+    const { targetUserId, title, amount, type, category } = req.body;
+    if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Invalid amount' });
 
-  let assignedUser = req.session.user;
+    let assignedUser = req.session.user;
 
-  if (req.session.user.role === 'admin' && targetUserId) {
-    const foundUser = await User.findById(targetUserId);
-    if (foundUser) assignedUser = { id: foundUser._id.toString(), username: foundUser.username };
+    if (req.session.user.role === 'admin' && targetUserId) {
+      const foundUser = await User.findById(targetUserId);
+      if (foundUser) assignedUser = { id: foundUser._id.toString(), username: foundUser.username };
+    }
+
+    const newTx = await Transaction.create({
+      userId: assignedUser.id,
+      username: assignedUser.username,
+      title: title !== '' ? title : category.split(' ')[0],
+      amount: parseFloat(amount),
+      type,
+      category
+    });
+
+    res.json({ success: true, transaction: newTx });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to record transaction' });
   }
-
-  const newTx = await Transaction.create({
-    userId: assignedUser.id,
-    username: assignedUser.username,
-    title: title !== '' ? title : category.split(' ')[0],
-    amount: parseFloat(amount),
-    type,
-    category
-  });
-
-  res.json({ success: true, transaction: newTx });
 });
 
 app.listen(PORT, () => console.log(`🚀 Giftoo App live on port ${PORT}`));

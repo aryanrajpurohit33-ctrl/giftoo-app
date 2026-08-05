@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f17">
+  <link rel="manifest" href="/manifest.json">
+  <title>Expense Analytics - Giftoo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0b0f17;
+      color: #f8fafc;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    #filtered-list::-webkit-scrollbar { width: 4px; }
+    #filtered-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+  </style>
+</head>
+<body class="min-h-screen w-full p-3 flex flex-col gap-3 max-w-2xl mx-auto">
+
+  <!-- TOP BAR -->
+  <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <a href="/" class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-xs font-bold text-slate-300">←</a>
+      <h1 class="text-sm font-extrabold text-amber-400">📊 Admin Expense Analytics</h1>
+    </div>
+    <button onclick="exportAnalyticsPDF()" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg text-[11px] font-bold">PDF 📄</button>
+  </header>
+
+  <!-- CONTROLS & FILTERS -->
+  <section class="glass-card p-3.5 rounded-2xl space-y-3">
+    <div class="grid grid-cols-2 gap-2">
+      <div>
+        <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Filter by User</label>
+        <select id="user-filter" onchange="applyAnalyticsFilter()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
+          <option value="all">👥 All Users</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Timeframe</label>
+        <select id="time-filter" onchange="applyAnalyticsFilter()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
+          <option value="all">All Time</option>
+          <option value="1w">Last 1 Week</option>
+          <option value="1m">Last 1 Month</option>
+          <option value="3m">Last 3 Months</option>
+          <option value="1y">Last 1 Year</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Category</label>
+      <select id="category-filter" onchange="applyAnalyticsFilter()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
+        <option value="all">🏷️ All Categories</option>
+        <option value="Auto">Auto 🛺</option>
+        <option value="Food">Food 🍔</option>
+        <option value="Party">Party Payment 🥳</option>
+        <option value="Shopping">Shopping 🛍️</option>
+        <option value="Bills">Bills ⚡</option>
+        <option value="Other">Other Expenses 📦</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- METRICS OVERVIEW -->
+  <section class="grid grid-cols-3 gap-2">
+    <div class="glass-card p-3 rounded-2xl">
+      <span class="text-[9px] font-bold text-slate-400 uppercase block">Filtered Expense</span>
+      <h2 id="metric-total" class="text-base font-black text-rose-400 mt-1">₹0</h2>
+    </div>
+    <div class="glass-card p-3 rounded-2xl">
+      <span class="text-[9px] font-bold text-slate-400 uppercase block">Transactions</span>
+      <h2 id="metric-count" class="text-base font-black text-sky-400 mt-1">0</h2>
+    </div>
+    <div class="glass-card p-3 rounded-2xl">
+      <span class="text-[9px] font-bold text-slate-400 uppercase block">Avg / Transaction</span>
+      <h2 id="metric-avg" class="text-base font-black text-amber-400 mt-1">₹0</h2>
+    </div>
+  </section>
+
+  <!-- CHART INSIGHTS -->
+  <section class="glass-card p-3.5 rounded-2xl space-y-2">
+    <h2 class="text-xs font-bold text-sky-400 uppercase">📈 Category Distribution</h2>
+    <div class="w-full h-48 flex items-center justify-center relative">
+      <canvas id="analyticsChart"></canvas>
+    </div>
+  </section>
+
+  <!-- USER EXPENSE RANKINGS -->
+  <section class="glass-card p-3.5 rounded-2xl space-y-2">
+    <h2 class="text-xs font-bold text-amber-400 uppercase">🏆 User Expense Breakdown</h2>
+    <div id="user-rankings" class="space-y-1.5 text-xs"></div>
+  </section>
+
+  <!-- DETAILED LIST -->
+  <section class="glass-card p-3.5 rounded-2xl space-y-2">
+    <h2 class="text-xs font-bold text-slate-300 uppercase">📜 Filtered Logs</h2>
+    <ul id="filtered-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></ul>
+  </section>
+
+  <script>
+    let rawTransactions = [];
+    let usersList = [];
+    let chartInstance = null;
+
+    async function init() {
+      const sessionRes = await fetch('/api/session');
+      if (!sessionRes.ok) return window.location.href = '/login';
+      const user = await sessionRes.json();
+      if (user.role !== 'admin') return window.location.href = '/';
+
+      const usersRes = await fetch('/api/admin/users');
+      usersList = await usersRes.json();
+
+      const userSelect = document.getElementById('user-filter');
+      usersList.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.innerText = `@${u.username}`;
+        userSelect.appendChild(opt);
+      });
+
+      fetchData();
+    }
+
+    async function fetchData() {
+      const res = await fetch('/api/transactions?filter=all');
+      rawTransactions = await res.json();
+      applyAnalyticsFilter();
+    }
+
+    function applyAnalyticsFilter() {
+      const selectedUser = document.getElementById('user-filter').value;
+      const selectedTime = document.getElementById('time-filter').value;
+      const selectedCat = document.getElementById('category-filter').value;
+
+      let filtered = rawTransactions.filter(t => t.type === 'expense');
+
+      if (selectedUser !== 'all') {
+        filtered = filtered.filter(t => t.userId === selectedUser);
+      }
+
+      if (selectedCat !== 'all') {
+        filtered = filtered.filter(t => t.category.toLowerCase().includes(selectedCat.toLowerCase()));
+      }
+
+      if (selectedTime !== 'all') {
+        const now = new Date();
+        let cutoff = new Date();
+        if (selectedTime === '1w') cutoff.setDate(now.getDate() - 7);
+        else if (selectedTime === '1m') cutoff.setMonth(now.getMonth() - 1);
+        else if (selectedTime === '3m') cutoff.setMonth(now.getMonth() - 3);
+        else if (selectedTime === '1y') cutoff.setFullYear(now.getFullYear() - 1);
+
+        filtered = filtered.filter(t => new Date(t.date) >= cutoff);
+      }
+
+      renderMetrics(filtered);
+      renderChart(filtered);
+      renderUserRankings(filtered);
+      renderFilteredList(filtered);
+    }
+
+    function renderMetrics(data) {
+      const total = data.reduce((acc, curr) => acc + Number(curr.amount), 0);
+      const count = data.length;
+      const avg = count > 0 ? Math.round(total / count) : 0;
+
+      document.getElementById('metric-total').innerText = `₹${total.toLocaleString('en-IN')}`;
+      document.getElementById('metric-count').innerText = count;
+      document.getElementById('metric-avg').innerText = `₹${avg.toLocaleString('en-IN')}`;
+    }
+
+    function renderChart(data) {
+      const categories = {};
+      data.forEach(t => {
+        const cat = t.category.split(' ')[0];
+        categories[cat] = (categories[cat] || 0) + Number(t.amount);
+      });
+
+      const labels = Object.keys(categories);
+      const values = Object.values(categories);
+
+      const ctx = document.getElementById('analyticsChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels.length > 0 ? labels : ['No Data'],
+          datasets: [{
+            data: values.length > 0 ? values : [1],
+            backgroundColor: values.length > 0 ? ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'] : ['#334155']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
+        }
+      });
+    }
+
+    function renderUserRankings(data) {
+      const userTotals = {};
+      data.forEach(t => {
+        userTotals[t.username] = (userTotals[t.username] || 0) + Number(t.amount);
+      });
+
+      const container = document.getElementById('user-rankings');
+      container.innerHTML = '';
+
+      const sortedUsers = Object.entries(userTotals).sort((a, b) => b[1] - a[1]);
+
+      if (sortedUsers.length === 0) {
+        container.innerHTML = `<p class="text-slate-500 text-xs">No records available.</p>`;
+        return;
+      }
+
+      sortedUsers.forEach(([username, amount]) => {
+        const row = document.createElement('div');
+        row.className = 'flex justify-between items-center p-2 bg-slate-900/80 rounded-xl border border-slate-800';
+        row.innerHTML = `
+          <span class="font-extrabold text-amber-400">@${username}</span>
+          <span class="font-black text-rose-400">₹${amount.toLocaleString('en-IN')}</span>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function renderFilteredList(data) {
+      const list = document.getElementById('filtered-list');
+      list.innerHTML = '';
+
+      if (data.length === 0) {
+        list.innerHTML = `<li class="text-center py-4 text-xs text-slate-500">No matching transactions.</li>`;
+        return;
+      }
+
+      data.forEach(tx => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center p-2.5 bg-slate-900/80 rounded-xl border border-slate-800';
+        li.innerHTML = `
+          <div>
+            <p class="text-xs font-bold text-slate-200">${tx.title}</p>
+            <p class="text-[9px] text-slate-400"><span class="text-amber-400 font-bold">@${tx.username}</span> • ${tx.category} • ${new Date(tx.date).toLocaleDateString('en-IN')}</p>
+          </div>
+          <span class="text-xs font-black text-rose-400">-₹${Number(tx.amount).toLocaleString('en-IN')}</span>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function exportAnalyticsPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Giftoo Admin Analytics Report", 14, 20);
+
+      const tableRows = rawTransactions.map((tx, idx) => [
+        idx + 1, tx.username, new Date(tx.date).toLocaleDateString('en-IN'), tx.title, tx.category, `Rs.${tx.amount}`
+      ]);
+
+      doc.autoTable({
+        startY: 30,
+        head: [['#', 'User', 'Date', 'Description', 'Category', 'Amount']],
+        body: tableRows
+      });
+
+      doc.save(`Giftoo_Analytics_Report.pdf`);
+    }
+
+    init();
+  </script>
+</body>
+</html>
