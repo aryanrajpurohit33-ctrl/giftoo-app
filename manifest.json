@@ -1,7 +1,23 @@
 {
   "short_name": "Giftoo",
   "name": "Giftoo Expenses",
+  "description": "Giftoo Personal & Shared Expense Tracker",
+  "start_url": "/",
+  "scope": "/",
+  "id": "/",
+  "dir": "ltr",
+  "lang": "en",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f17",
+  "theme_color": "#0b0f17",
   "icons": [
+    {
+      "src": "https://i.ibb.co/6P2T3y4/giftoo-logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
     {
       "src": "https://i.ibb.co/6P2T3y4/giftoo-logo.png",
       "type": "image/png",
@@ -9,9 +25,5 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/",
-  "background_color": "#0b0f17",
-  "theme_color": "#0b0f17",
-  "display": "standalone",
-  "orientation": "portrait"
+  "categories": ["finance", "utilities"]
 }
