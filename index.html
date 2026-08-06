@@ -57,7 +57,7 @@
 
     <div class="flex items-center gap-2">
       <div class="text-right">
-        <span id="live-time" class="text-sm font-extrabold text-indigo-400 block leading-tight">--:--</span>
+        
         <span id="user-badge" class="text-[10px] text-sky-400 font-bold block">User</span>
       </div>
       <button onclick="toggleSidebar()" class="w-9 h-9 bg-slate-800/80 border border-slate-700 text-white rounded-xl flex items-center justify-center text-base font-bold">⋮</button>
@@ -476,12 +476,7 @@
       if (d2) { d2.value = todayStr; d2.max = todayStr; d2.min = pastWeekStr; }
     }
 
-    function updateClock() {
-      document.getElementById('live-time').innerText = new Date().toLocaleTimeString('en-IN', {
-        timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true
-      });
-    }
-    setInterval(updateClock, 1000); updateClock();
+    
 
     function toggleSidebar() {
       const s = document.getElementById('sidebar');
