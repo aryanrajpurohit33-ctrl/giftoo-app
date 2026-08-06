@@ -9,6 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
@@ -128,7 +129,7 @@
       </form>
     </section>
 
-    <!-- TRANSACTIONS LIST (Top 10 Only) -->
+    <!-- TRANSACTIONS LIST -->
     <section class="glass-card p-4 rounded-2xl space-y-3 flex-1 flex flex-col justify-between">
       <div class="flex justify-between items-center">
         <h2 id="feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Recent Activity (Top 10)</h2>
@@ -137,7 +138,6 @@
 
       <ul id="tx-list" class="space-y-2 flex-1 max-h-56 overflow-y-auto pr-1"></ul>
 
-      <!-- LINK TO FULL HISTORY PAGE -->
       <a href="/history" class="w-full bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700/80 font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-1.5 block">
         <span>📜 View All Transactions →</span>
       </a>
@@ -157,7 +157,6 @@
         <button onclick="toggleSidebar()" class="text-slate-400 font-bold text-base">✕</button>
       </div>
 
-      <!-- NAVIGATION OPTIONS -->
       <div class="space-y-2.5">
         <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block">Navigation</span>
 
@@ -165,7 +164,6 @@
           <span>📜</span> Full Transaction History
         </a>
 
-        <!-- ADMIN OPTIONS -->
         <div id="admin-options" class="space-y-2.5 pt-2">
           <span class="text-[9px] font-extrabold text-amber-400 uppercase tracking-widest block">Admin Operations</span>
           
@@ -211,6 +209,8 @@
   </div>
 
   <script>
+    Chart.register(ChartDataLabels);
+
     let currentUser = null;
     let transactionsData = [];
     let myChart = null;
@@ -293,13 +293,11 @@
       list.innerHTML = '';
       let incomeSum = 0, expenseSum = 0;
 
-      // Calculate totals across full set
       transactionsData.forEach(tx => {
         if (tx.type === 'income') incomeSum += Number(tx.amount);
         else expenseSum += Number(tx.amount);
       });
 
-      // Show ONLY top 10 newest items on homepage
       const top10 = transactionsData.slice(0, 10);
 
       if (top10.length === 0) {
@@ -384,13 +382,22 @@
 
     function renderPieChart() {
       const categories = {};
+      let totalExpense = 0;
+
       transactionsData.filter(t => t.type === 'expense').forEach(t => {
         const catName = t.category.split(' ')[0];
-        categories[catName] = (categories[catName] || 0) + Number(t.amount);
+        const amt = Number(t.amount);
+        categories[catName] = (categories[catName] || 0) + amt;
+        totalExpense += amt;
       });
 
-      const labels = Object.keys(categories);
+      const catNames = Object.keys(categories);
       const data = Object.values(categories);
+
+      const labels = catNames.map(cat => {
+        const pct = totalExpense > 0 ? Math.round((categories[cat] / totalExpense) * 100) : 0;
+        return `${cat} ${pct}%`;
+      });
 
       const ctx = document.getElementById('expenseChart').getContext('2d');
       if (myChart) myChart.destroy();
@@ -408,7 +415,18 @@
           responsive: true,
           maintainAspectRatio: false,
           layout: { padding: { top: 5, bottom: 5 } },
-          plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
+          plugins: {
+            legend: { labels: { color: '#f8fafc', font: { size: 10, weight: 'bold' } } },
+            datalabels: {
+              color: '#ffffff',
+              font: { weight: '800', size: 11 },
+              formatter: (value) => {
+                if (totalExpense === 0 || data.length === 0) return '';
+                const pct = Math.round((value / totalExpense) * 100);
+                return pct >= 4 ? `${pct}%` : '';
+              }
+            }
+          }
         }
       });
     }
