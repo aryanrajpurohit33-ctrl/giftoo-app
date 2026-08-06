@@ -98,7 +98,7 @@
 
         <div class="grid grid-cols-2 gap-2">
           <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
-            <option value="Auto 🛺">Auto 🛺</option>
+            <option value="Rikshaw 🛺">Rikshaw 🛺</option>
             <option value="Food 🍔">Food 🍔</option>
             <option value="Party Payment 🥳">Party Payment 🥳</option>
             <option value="Shopping 🛍️">Shopping 🛍️</option>
@@ -148,6 +148,7 @@
           <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-1">Timeframe</label>
           <select id="history-time" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
             <option value="all">All Time</option>
+            <option value="custom">Custom Range 📅</option>
             <option value="1w">Last 1 Wk</option>
             <option value="1m">Last 1 Mo</option>
             <option value="3m">Last 3 Mo</option>
@@ -276,7 +277,7 @@
           <div id="assign-category-wrapper">
             <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Category</label>
             <select id="assign-category" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
-              <option value="Auto 🛺">Auto 🛺</option>
+              <option value="Rikshaw 🛺">Rikshaw 🛺</option>
               <option value="Food 🍔">Food 🍔</option>
               <option value="Party Payment 🥳">Party Payment 🥳</option>
               <option value="Shopping 🛍️">Shopping 🛍️</option>
@@ -631,12 +632,31 @@
         const matchesSearch = (tx.title || '').toLowerCase().includes(search) || (tx.category || '').toLowerCase().includes(search);
         const matchesType = type === 'all' || tx.type === type;
         let matchesTime = true;
-        if (time !== 'all') {
-          const now = new Date(); let cutoff = new Date();
-          if (time === '1w') cutoff.setDate(now.getDate() - 7);
-          else if (time === '1m') cutoff.setMonth(now.getMonth() - 1);
-          else if (time === '3m') cutoff.setMonth(now.getMonth() - 3);
-          matchesTime = new Date(tx.date) >= cutoff;
+        const customBox = document.getElementById('analytics-custom-date-container');
+        if (time === 'custom') {
+          if (customBox) customBox.classList.remove('hidden');
+          const startVal = document.getElementById('analytics-start-date').value;
+          const endVal = document.getElementById('analytics-end-date').value;
+          const txDate = new Date(tx.date);
+          if (startVal) {
+            const sDate = new Date(startVal);
+            sDate.setHours(0, 0, 0, 0);
+            if (txDate < sDate) matchesTime = false;
+          }
+          if (endVal) {
+            const eDate = new Date(endVal);
+            eDate.setHours(23, 59, 59, 999);
+            if (txDate > eDate) matchesTime = false;
+          }
+        } else {
+          if (customBox) customBox.classList.add('hidden');
+          if (time !== 'all') {
+            const now = new Date(); let cutoff = new Date();
+            if (time === '1w') cutoff.setDate(now.getDate() - 7);
+            else if (time === '1m') cutoff.setMonth(now.getMonth() - 1);
+            else if (time === '3m') cutoff.setMonth(now.getMonth() - 3);
+            matchesTime = new Date(tx.date) >= cutoff;
+          }
         }
         return matchesSearch && matchesType && matchesTime;
       });
