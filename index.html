@@ -66,6 +66,19 @@
 
   <!-- ================= VIEW 1: HOME TAB ================= -->
   <main id="view-home" class="app-view space-y-3">
+    <!-- PUSH NOTIFICATION RECOMMENDATION BANNER -->
+    <div id="notification-banner" class="hidden bg-gradient-to-r from-sky-500/15 via-indigo-500/15 to-purple-500/15 border border-sky-500/30 p-3.5 rounded-2xl flex items-center justify-between gap-3 shadow-lg">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-sm">🔔</div>
+        <div>
+          <h3 class="text-xs font-extrabold text-white">Enable Notifications</h3>
+          <p class="text-[10px] font-semibold text-slate-400">Get instant updates for assigned transactions</p>
+        </div>
+      </div>
+      <button onclick="requestNotificationFromBanner()" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-[11px] px-3 py-2 rounded-xl transition shadow">
+        Enable ⚡
+      </button>
+    </div>
     <section class="grid grid-cols-3 gap-2">
       <div class="glass-card p-3 rounded-2xl flex flex-col justify-between">
         <span class="text-[9px] font-bold text-slate-400 uppercase">Total Balance</span>
@@ -522,6 +535,7 @@
         setupDateLimits();
         document.getElementById('bottom-nav').classList.remove('hidden');
         fetchTransactions();
+        checkNotificationPermissionBanner();
       } catch {
         window.location.href = '/login';
       }
@@ -1027,6 +1041,23 @@
         outputArray[i] = rawData.charCodeAt(i);
       }
       return outputArray;
+    }
+
+    
+    function checkNotificationPermissionBanner() {
+      const banner = document.getElementById('notification-banner');
+      if (!banner) return;
+
+      if ('Notification' in window && Notification.permission === 'default') {
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    async function requestNotificationFromBanner() {
+      await subscribeUserToPush();
+      checkNotificationPermissionBanner();
     }
 
     initSession();
