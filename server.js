@@ -10,7 +10,10 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://aryanrajpurohit33_db_user:O5OjBvjJxB6FNYnn@cluster0.2fdvz9w.mongodb.net/giftoo?retryWrites=true&w=majority";
 
 mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
-  .then(() => console.log('✅ Connected permanently to MongoDB Atlas'))
+  .then(() => {
+    console.log('✅ Connected permanently to MongoDB Atlas');
+    updateAdminAccount();
+  })
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 const userSchema = new mongoose.Schema({
@@ -32,21 +35,28 @@ const transactionSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
-async function seedDefaultUsers() {
+async function updateAdminAccount() {
   try {
-    const count = await User.countDocuments();
-    if (count === 0) {
-      await User.create([
-        { username: 'Aryan', password: '12345678', role: 'admin' },
-        { username: 'user1', password: 'user123', role: 'user' }
-      ]);
-      console.log('🌱 Default users seeded into MongoDB');
+    // Check if the old 'Aryan' account exists and rename/update it, or ensure 'Giftoo' exists
+    let adminUser = await User.findOne({ role: 'admin' });
+    if (adminUser) {
+      adminUser.username = 'Giftoo';
+      adminUser.password = 'aditya1';
+      await adminUser.save();
+      console.log('🔑 Admin account updated to Username: Giftoo');
+    } else {
+      await User.create({ username: 'Giftoo', password: 'aditya1', role: 'admin' });
+      console.log('🌱 Admin account created: Username: Giftoo');
+    }
+
+    // Keep all transactions assigned to the admin account updated with the new username
+    if (adminUser) {
+      await Transaction.updateMany({ userId: adminUser._id }, { username: 'Giftoo' });
     }
   } catch (err) {
-    console.error('Seeding error:', err);
+    console.error('Admin update error:', err);
   }
 }
-seedDefaultUsers();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -255,4 +265,4 @@ app.post('/api/transactions', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`🚀 Giftoo App live on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Money App live on port ${PORT}`));
