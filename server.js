@@ -74,6 +74,11 @@ app.get(['/', '/history', '/analytics', '/admin'], (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/profile', (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/');
+  res.sendFile(path.join(__dirname, 'profile.html'));
+});
+
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -110,10 +115,21 @@ app.get('/api/admin/users', async (req, res) => {
     return res.status(403).json({ error: 'Forbidden' });
   }
   try {
-    const allUsers = await User.find({}, 'username role');
-    res.json(allUsers.map(u => ({ id: u._id, username: u.username, role: u.role })));
+    const allUsers = await User.find({}, 'username password role');
+    res.json(allUsers.map(u => ({ id: u._id, username: u.username, password: u.password, role: u.role })));
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+app.get('/api/users/:id', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ id: user._id, username: user.username, password: user.password, role: user.role });
+  } catch {
+    res.status(400).json({ error: 'Invalid User ID' });
   }
 });
 
@@ -136,7 +152,6 @@ app.post('/api/admin/users', async (req, res) => {
   }
 });
 
-// DELETE USER ACCOUNT AND ALL ASSOCIATED TRANSACTIONS
 app.delete('/api/admin/users/:id', async (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden' });
@@ -156,7 +171,6 @@ app.delete('/api/admin/users/:id', async (req, res) => {
   }
 });
 
-// DELETE INDIVIDUAL TRANSACTION
 app.delete('/api/admin/transactions/:id', async (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden' });

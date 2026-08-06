@@ -514,15 +514,15 @@
       usersList.forEach(u => {
         const isSelf = u.id === currentUser.id || u.role === 'admin';
         const li = document.createElement('li');
-        li.className = 'flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-800';
+        li.className = 'flex items-center justify-between p-3 bg-slate-900/80 hover:bg-slate-800/80 rounded-xl border border-slate-800 transition cursor-pointer';
         li.innerHTML = `
-          <div class="flex items-center gap-2.5">
+          <a href="/profile?id=${u.id}" class="flex items-center gap-2.5 flex-1">
             <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-extrabold text-xs">👤</div>
             <div>
-              <p class="text-xs font-bold text-slate-200 leading-tight">@${u.username}</p>
+              <p class="text-xs font-bold text-slate-200 leading-tight hover:underline">@${u.username}</p>
               <p class="text-[9px] font-semibold text-amber-400 uppercase mt-0.5">${u.role}</p>
             </div>
-          </div>
+          </a>
           ${!isSelf ? `
             <button onclick="confirmDeleteUser('${u.id}', '${u.username}')" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-lg text-xs font-bold transition">
               Delete User 🗑️

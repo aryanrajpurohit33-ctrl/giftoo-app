@@ -15,49 +15,75 @@
     .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
   </style>
 </head>
-<body class="min-h-screen w-full p-3 flex flex-col gap-3 max-w-2xl mx-auto">
+<body class="min-h-screen w-full p-3 flex flex-col gap-3 max-w-2xl mx-auto overflow-y-auto">
 
   <!-- TOP BAR -->
   <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
     <div class="flex items-center gap-2">
-      <a href="/users" class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-xs font-bold text-slate-300">←</a>
-      <h1 id="profile-title" class="text-sm font-extrabold text-amber-400">👤 User Profile</h1>
+      <a href="/admin" class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-xs font-bold text-slate-300">←</a>
+      <h1 id="profile-title" class="text-xs font-extrabold text-amber-400">👤 User Profile</h1>
     </div>
     <button onclick="exportUserProfilePDF()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-xl text-xs font-extrabold">
-      Export Detailed PDF 📄
+      Export PDF 📄
     </button>
   </header>
 
-  <!-- USER OVERVIEW CARD -->
-  <section class="glass-card p-4 rounded-2xl grid grid-cols-3 gap-2 text-center">
-    <div>
-      <span class="text-[9px] font-bold text-slate-400 uppercase">Total Income</span>
-      <h3 id="user-income" class="text-sm font-extrabold text-emerald-400 mt-0.5">+₹0</h3>
+  <!-- USER ACCOUNT & CREDENTIALS CARD -->
+  <section class="glass-card p-4 rounded-2xl space-y-3">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div>
+        <h2 id="user-display-name" class="text-sm font-black text-white">@username</h2>
+        <p id="user-role-badge" class="text-[10px] font-bold text-sky-400 uppercase mt-0.5">Role: user</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-700/80 px-3 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-[10px] text-slate-400 font-bold uppercase">Password:</span>
+        <span id="user-password-text" class="text-xs font-black tracking-widest text-amber-400">••••••••</span>
+        <button onclick="togglePasswordVisibility()" class="text-xs p-1">👁️</button>
+      </div>
     </div>
-    <div>
-      <span class="text-[9px] font-bold text-slate-400 uppercase">Total Expense</span>
-      <h3 id="user-expense" class="text-sm font-extrabold text-rose-400 mt-0.5">-₹0</h3>
-    </div>
-    <div>
-      <span class="text-[9px] font-bold text-slate-400 uppercase">Net Balance</span>
-      <h3 id="user-balance" class="text-sm font-extrabold text-white mt-0.5">₹0</h3>
+
+    <!-- METRIC CARDS -->
+    <div class="grid grid-cols-3 gap-2 text-center pt-1">
+      <div>
+        <span class="text-[9px] font-bold text-slate-400 uppercase block">Total Income</span>
+        <h3 id="user-income" class="text-xs font-extrabold text-emerald-400 mt-0.5">+₹0</h3>
+      </div>
+      <div>
+        <span class="text-[9px] font-bold text-slate-400 uppercase block">Total Expense</span>
+        <h3 id="user-expense" class="text-xs font-extrabold text-rose-400 mt-0.5">-₹0</h3>
+      </div>
+      <div>
+        <span class="text-[9px] font-bold text-slate-400 uppercase block">Net Balance</span>
+        <h3 id="user-balance" class="text-xs font-extrabold text-white mt-0.5">₹0</h3>
+      </div>
     </div>
   </section>
 
   <!-- USER TRANSACTIONS LIST -->
-  <section class="glass-card p-4 rounded-2xl space-y-2 flex-1">
+  <section class="glass-card p-4 rounded-2xl space-y-2">
     <h2 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider">Itemized Activity History</h2>
-    <ul id="user-tx-list" class="space-y-2 max-h-[65vh] overflow-y-auto pr-1"></ul>
+    <ul id="user-tx-list" class="space-y-2"></ul>
   </section>
 
   <script>
     let targetUser = null;
     let userTransactions = [];
+    let showPassword = false;
+
+    function togglePasswordVisibility() {
+      showPassword = !showPassword;
+      const pwdText = document.getElementById('user-password-text');
+      if (showPassword) {
+        pwdText.innerText = targetUser.password || 'N/A';
+      } else {
+        pwdText.innerText = '••••••••';
+      }
+    }
 
     async function initProfile() {
       const urlParams = new URLSearchParams(window.location.search);
       const userId = urlParams.get('id');
-      if (!userId) return window.location.href = '/users';
+      if (!userId) return window.location.href = '/admin';
 
       const sessionRes = await fetch('/api/session');
       if (!sessionRes.ok) return window.location.href = '/login';
@@ -66,7 +92,10 @@
 
       const userRes = await fetch(`/api/users/${userId}`);
       targetUser = await userRes.json();
+
       document.getElementById('profile-title').innerText = `👤 @${targetUser.username}'s Profile`;
+      document.getElementById('user-display-name').innerText = `@${targetUser.username}`;
+      document.getElementById('user-role-badge').innerText = `Role: ${targetUser.role}`;
 
       const txRes = await fetch(`/api/transactions?userId=${userId}&filter=all`);
       userTransactions = await txRes.json();
@@ -122,7 +151,7 @@
       const cleanStr = (s) => String(s || '').replace(/[^\x00-\x7F]/g, "").trim();
 
       doc.setFontSize(16);
-      doc.text(`Giftoo - Detailed Statement: @${cleanStr(targetUser.username)}`, 14, 18);
+      doc.text(`Giftoo - Statement: @${cleanStr(targetUser.username)}`, 14, 18);
       doc.setFontSize(10);
       doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 14, 25);
 
