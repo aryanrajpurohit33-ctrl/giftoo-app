@@ -462,7 +462,15 @@
     function openCreateUserModal() { document.getElementById('user-modal').classList.remove('hidden'); }
     function closeCreateUserModal() { document.getElementById('user-modal').classList.add('hidden'); }
 
+    function preventBackToLogin() {
+      history.pushState(null, null, location.href);
+      window.onpopstate = function () {
+        history.pushState(null, null, location.href);
+      };
+    }
+
     async function initSession() {
+      preventBackToLogin();
       try {
         const res = await fetch('/api/session');
         if (!res.ok) return window.location.href = '/login';

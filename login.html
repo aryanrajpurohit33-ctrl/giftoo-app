@@ -93,7 +93,7 @@
         const data = await res.json();
 
         if (res.ok && data.success) {
-          window.location.href = '/';
+          window.location.replace('/');
         } else {
           alertBox.innerText = data.message || 'Invalid credentials';
           alertBox.classList.remove('hidden');
