@@ -31,7 +31,7 @@
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
   </style>
 </head>
-<body class="min-h-screen w-full p-3 pb-20 flex flex-col max-w-2xl mx-auto">
+<body class="min-h-screen w-full p-3 pb-24 flex flex-col max-w-2xl mx-auto">
 
   <!-- TOP HEADER -->
   <header class="glass-card p-3 rounded-2xl flex justify-between items-center mb-3">
@@ -60,7 +60,7 @@
   </header>
 
   <!-- ================= VIEW 1: HOME TAB ================= -->
-  <main id="view-home" class="app-view space-y-3 flex-1 flex flex-col justify-between">
+  <main id="view-home" class="app-view space-y-3 flex-1 flex flex-col">
     <!-- OVERVIEW CARDS -->
     <section class="grid grid-cols-3 gap-2">
       <div class="glass-card p-3 rounded-2xl flex flex-col justify-between">
@@ -111,13 +111,12 @@
     <!-- TOP 10 TRANSACTIONS FEED -->
     <section class="glass-card p-4 rounded-2xl space-y-3 flex-1 flex flex-col justify-between">
       <h2 id="home-feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Recent Activity (Top 10)</h2>
-      <ul id="home-tx-list" class="space-y-2 flex-1 max-h-56 overflow-y-auto pr-1"></ul>
+      <ul id="home-tx-list" class="space-y-2 flex-1 max-h-64 overflow-y-auto pr-1"></ul>
       <button onclick="switchTab('history')" class="w-full bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700/80 font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-1.5 block">
         📜 View All Transactions →
       </button>
     </section>
   </main>
-
 
   <!-- ================= VIEW 2: HISTORY TAB ================= -->
   <main id="view-history" class="app-view space-y-3 hidden flex-1 flex flex-col">
@@ -156,7 +155,6 @@
       <ul id="history-tx-list" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1 flex-1"></ul>
     </section>
   </main>
-
 
   <!-- ================= VIEW 3: ANALYTICS TAB (ADMIN) ================= -->
   <main id="view-analytics" class="app-view space-y-3 hidden flex-1 flex flex-col">
@@ -227,7 +225,6 @@
     </section>
   </main>
 
-
   <!-- ================= VIEW 4: ADMIN TAB (ASSIGN) ================= -->
   <main id="view-admin" class="app-view space-y-3 hidden flex-1 flex flex-col">
     <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
@@ -288,7 +285,6 @@
       </form>
     </section>
   </main>
-
 
   <!-- FIXED BOTTOM NAVIGATION BAR -->
   <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 z-40 px-3 py-2">
@@ -378,7 +374,6 @@
     let filteredAnalyticsTx = [];
     let categoryChartObj = null;
 
-    // 0ms INSTANT TAB SWITCHING
     function switchTab(tabName) {
       document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
       document.getElementById(`view-${tabName}`).classList.remove('hidden');
