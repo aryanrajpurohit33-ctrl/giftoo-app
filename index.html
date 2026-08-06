@@ -35,24 +35,22 @@
   <!-- TOP HEADER -->
   <header class="glass-card p-3 rounded-2xl flex justify-between items-center mb-3">
     <div class="flex items-center gap-2">
-      <div class="flex items-center bg-slate-900/60 p-1.5 rounded-xl border border-slate-700/50">
-        <div class="flex flex-col">
-          <div class="flex items-center">
-            <svg class="h-7 w-auto block" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="5" y="20" width="60" height="55" rx="6" fill="#65C9C0"/>
-              <rect x="2" y="15" width="66" height="12" rx="3" fill="#65C9C0"/>
-              <path d="M25 15C20 5 30 5 35 15Z" fill="#F472B6"/>
-              <path d="M45 15C50 5 40 5 35 15Z" fill="#F472B6"/>
-              <circle cx="25" cy="40" r="4" fill="#000"/>
-              <circle cx="45" cy="40" r="4" fill="#000"/>
-              <path d="M30 48Q35 53 40 48Z" fill="#F472B6" stroke="#000" stroke-width="1.5"/>
-              <text x="78" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" fill="#42C7BB">giftoo</text>
-            </svg>
-          </div>
-          <div class="flex items-center gap-1 justify-end -mt-1 pr-0.5">
-            <span class="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest">by</span>
-            <span class="font-black text-[10px] tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">Money</span>
-          </div>
+      <div class="flex flex-col">
+        <div class="flex items-center">
+          <svg class="h-7 w-auto block" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5" y="20" width="60" height="55" rx="6" fill="#65C9C0"/>
+            <rect x="2" y="15" width="66" height="12" rx="3" fill="#65C9C0"/>
+            <path d="M25 15C20 5 30 5 35 15Z" fill="#F472B6"/>
+            <path d="M45 15C50 5 40 5 35 15Z" fill="#F472B6"/>
+            <circle cx="25" cy="40" r="4" fill="#000"/>
+            <circle cx="45" cy="40" r="4" fill="#000"/>
+            <path d="M30 48Q35 53 40 48Z" fill="#F472B6" stroke="#000" stroke-width="1.5"/>
+            <text x="78" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" fill="#42C7BB">giftoo</text>
+          </svg>
+        </div>
+        <div class="flex items-center gap-1 justify-end -mt-1 pr-0.5">
+          <span class="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest">by</span>
+          <span class="font-black text-[10px] tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">Money</span>
         </div>
       </div>
     </div>
@@ -88,17 +86,7 @@
       <form id="tx-form" onsubmit="addUserTransaction(event)" class="space-y-2.5">
         <input type="text" id="tx-title" placeholder="Description (Optional)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
         
-        <div id="history-custom-date-container" class="grid grid-cols-2 gap-2 mt-2 hidden">
-        <div>
-          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Start Date</label>
-          <input type="date" id="history-start-date" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
-        </div>
-        <div>
-          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">End Date</label>
-          <input type="date" id="history-end-date" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-2">
           <input type="number" id="tx-amount" placeholder="Amount (₹)" required min="1" step="any" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
           <select id="tx-type" onchange="toggleCategoryVisibility()" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
             <option value="expense">Expense 💸</option>
@@ -158,21 +146,23 @@
           <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-1">Timeframe</label>
           <select id="history-time" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
             <option value="all">All Time</option>
-            <option value="custom">Custom Range 📅</option>
             <option value="1w">Last 1 Wk</option>
             <option value="1m">Last 1 Mo</option>
             <option value="3m">Last 3 Mo</option>
+            <option value="custom">Custom Range 📅</option>
           </select>
         </div>
       </div>
-      <div id="analytics-custom-date-container" class="grid grid-cols-2 gap-2 mt-2 hidden">
+
+      <!-- HISTORY CUSTOM DATE RANGE PICKER -->
+      <div id="history-custom-date-container" class="grid grid-cols-2 gap-2 pt-1 hidden">
         <div>
           <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Start Date</label>
-          <input type="date" id="analytics-start-date" onchange="applyAnalyticsFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-1.5 font-bold">
+          <input type="date" id="history-start-date" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
         </div>
         <div>
           <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">End Date</label>
-          <input type="date" id="analytics-end-date" onchange="applyAnalyticsFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-1.5 font-bold">
+          <input type="date" id="history-end-date" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
         </div>
       </div>
     </section>
@@ -234,7 +224,20 @@
             <option value="1w">Last 1 Wk</option>
             <option value="3m">Last 3 Mo</option>
             <option value="all">All Time</option>
+            <option value="custom">Custom Range 📅</option>
           </select>
+        </div>
+      </div>
+
+      <!-- ANALYTICS CUSTOM DATE RANGE PICKER -->
+      <div id="analytics-custom-date-container" class="grid grid-cols-2 gap-2 pt-1 hidden">
+        <div>
+          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Start Date</label>
+          <input type="date" id="analytics-start-date" onchange="applyAnalyticsFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-1.5 font-bold">
+        </div>
+        <div>
+          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">End Date</label>
+          <input type="date" id="analytics-end-date" onchange="applyAnalyticsFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-1.5 font-bold">
         </div>
       </div>
     </section>
@@ -255,7 +258,7 @@
     </section>
   </main>
 
-  <!-- ================= VIEW 4: ADMIN TAB (ASSIGN + MANAGE USERS) ================= -->
+  <!-- ================= VIEW 4: ADMIN TAB ================= -->
   <main id="view-admin" class="app-view space-y-3 hidden">
     <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
       <h1 class="text-xs font-extrabold text-amber-400">👑 Admin Operations</h1>
@@ -414,6 +417,13 @@
     let homeFeedLimit = 20;
     let usersList = [];
 
+    function preventBackToLogin() {
+      history.pushState(null, null, location.href);
+      window.onpopstate = function () {
+        history.pushState(null, null, location.href);
+      };
+    }
+
     function switchTab(tabName) {
       document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
       document.getElementById(`view-${tabName}`).classList.remove('hidden');
@@ -482,13 +492,6 @@
 
     function openCreateUserModal() { document.getElementById('user-modal').classList.remove('hidden'); }
     function closeCreateUserModal() { document.getElementById('user-modal').classList.add('hidden'); }
-
-    function preventBackToLogin() {
-      history.pushState(null, null, location.href);
-      window.onpopstate = function () {
-        history.pushState(null, null, location.href);
-      };
-    }
 
     async function initSession() {
       preventBackToLogin();
