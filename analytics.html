@@ -257,7 +257,7 @@
       if (filteredTransactions.length === 0) return alert('No transactions available to export.');
 
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+      const doc = new jsPDF('p', 'mm', 'a4');
 
       let inc = 0, exp = 0;
       filteredTransactions.forEach(t => {
@@ -268,50 +268,71 @@
 
       const cleanStr = (s) => String(s || '').replace(/[^\x00-\x7F]/g, "").trim();
 
-      // BRANDING HEADER
-      doc.setFillColor(15, 23, 42);
-      doc.rect(0, 0, 210, 40, 'F');
+      // 1. BRANDING HEADER
+      doc.setFillColor(11, 15, 23); // #0b0f17
+      doc.rect(0, 0, 210, 36, 'F');
+
+      doc.setFillColor(66, 199, 187); // Giftoo cyan accent line
+      doc.rect(14, 10, 4, 16, 'F');
 
       doc.setTextColor(66, 199, 187);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(22);
-      doc.text("giftoo", 14, 22);
+      doc.setFontSize(20);
+      doc.text("giftoo", 22, 18);
 
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
-      doc.text("Financial Analytics Statement", 14, 32);
+      doc.setTextColor(248, 250, 252);
+      doc.setFontSize(11);
+      doc.text("Financial Analytics Statement", 22, 24);
 
-      doc.setFontSize(9);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
       doc.setTextColor(148, 163, 184);
-      doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 145, 32);
+      doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 155, 22);
 
-      // SUMMARY CARDS
-      doc.setDrawColor(51, 65, 85);
-      doc.setFillColor(30, 41, 59);
+      // 2. HIGH-CONTRAST METRICS CARDS
+      const cardY = 42;
+      const cardWidth = 56;
+      const cardHeight = 22;
 
-      doc.roundedRect(14, 48, 58, 20, 3, 3, 'FD');
-      doc.setFontSize(8);
+      // Total Income Card
+      doc.setFillColor(30, 41, 59); // Dark slate card
+      doc.setDrawColor(16, 185, 129); // Emerald border
+      doc.setLineWidth(0.4);
+      doc.roundedRect(14, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+
+      doc.setFontSize(7.5);
+      doc.setFont('helvetica', 'bold');
       doc.setTextColor(16, 185, 129);
-      doc.text("TOTAL INCOME", 18, 55);
-      doc.setFontSize(11);
-      doc.text(`+ Rs. ${inc.toLocaleString('en-IN')}`, 18, 63);
+      doc.text("TOTAL INCOME", 19, cardY + 7);
+      doc.setFontSize(12);
+      doc.setTextColor(248, 250, 252);
+      doc.text(`+ Rs. ${inc.toLocaleString('en-IN')}`, 19, cardY + 16);
 
-      doc.roundedRect(76, 48, 58, 20, 3, 3, 'FD');
-      doc.setFontSize(8);
+      // Total Expenses Card
+      doc.setFillColor(30, 41, 59);
+      doc.setDrawColor(239, 68, 68); // Rose border
+      doc.roundedRect(77, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+
+      doc.setFontSize(7.5);
       doc.setTextColor(239, 68, 68);
-      doc.text("TOTAL EXPENSES", 80, 55);
-      doc.setFontSize(11);
-      doc.text(`- Rs. ${exp.toLocaleString('en-IN')}`, 80, 63);
+      doc.text("TOTAL EXPENSES", 82, cardY + 7);
+      doc.setFontSize(12);
+      doc.setTextColor(248, 250, 252);
+      doc.text(`- Rs. ${exp.toLocaleString('en-IN')}`, 82, cardY + 16);
 
-      doc.roundedRect(138, 48, 58, 20, 3, 3, 'FD');
-      doc.setFontSize(8);
+      // Net Balance Card
+      doc.setFillColor(30, 41, 59);
+      doc.setDrawColor(56, 189, 248); // Sky border
+      doc.roundedRect(140, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+
+      doc.setFontSize(7.5);
       doc.setTextColor(56, 189, 248);
-      doc.text("NET BALANCE", 142, 55);
-      doc.setFontSize(11);
-      doc.setTextColor(255, 255, 255);
-      doc.text(`Rs. ${net.toLocaleString('en-IN')}`, 142, 63);
+      doc.text("NET BALANCE", 145, cardY + 7);
+      doc.setFontSize(12);
+      doc.setTextColor(248, 250, 252);
+      doc.text(`Rs. ${net.toLocaleString('en-IN')}`, 145, cardY + 16);
 
-      // TABLE LEDGER
+      // 3. TABLE LEDGER
       const tableRows = filteredTransactions.map((tx, i) => [
         i + 1,
         cleanStr(tx.username),
@@ -323,13 +344,43 @@
       ]);
 
       doc.autoTable({
-        startY: 76,
+        startY: 70,
         head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']],
         body: tableRows,
-        theme: 'grid',
-        headStyles: { fillColor: [15, 23, 42], textColor: [56, 189, 248], fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        styles: { fontSize: 8.5, cellPadding: 3 }
+        theme: 'striped',
+        headStyles: {
+          fillColor: [15, 23, 42],
+          textColor: [56, 189, 248],
+          fontStyle: 'bold',
+          fontSize: 9,
+          cellPadding: 4
+        },
+        bodyStyles: {
+          fontSize: 8.5,
+          textColor: [30, 41, 59],
+          cellPadding: 3.5
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { cellWidth: 10, halign: 'center' },
+          1: { cellWidth: 25, fontStyle: 'bold' },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 45 },
+          4: { cellWidth: 35 },
+          5: { cellWidth: 22, fontStyle: 'bold' },
+          6: { cellWidth: 28, halign: 'right', fontStyle: 'bold' }
+        },
+        didParseCell: function(data) {
+          if (data.section === 'body' && data.column.index === 5) {
+            if (data.cell.raw === 'EXPENSE') {
+              data.cell.styles.textColor = [225, 29, 72];
+            } else if (data.cell.raw === 'INCOME') {
+              data.cell.styles.textColor = [16, 185, 129];
+            }
+          }
+        }
       });
 
       doc.save(`Giftoo_Detailed_Analytics.pdf`);
