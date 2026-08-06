@@ -8,8 +8,6 @@
   <title>User Profile - Giftoo</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #f8fafc; }
     .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
@@ -23,9 +21,6 @@
       <a href="/admin" class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-xs font-bold text-slate-300">←</a>
       <h1 id="profile-title" class="text-xs font-extrabold text-amber-400">👤 User Profile</h1>
     </div>
-    <button onclick="exportUserProfilePDF()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-xl text-xs font-extrabold">
-      Export PDF 📄
-    </button>
   </header>
 
   <!-- USER ACCOUNT & CREDENTIALS CARD -->
@@ -142,31 +137,6 @@
       document.getElementById('user-income').innerText = `+₹${inc.toLocaleString('en-IN')}`;
       document.getElementById('user-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;
       document.getElementById('user-balance').innerText = `₹${(inc - exp).toLocaleString('en-IN')}`;
-    }
-
-    function exportUserProfilePDF() {
-      if (userTransactions.length === 0) return alert('No transaction records available for this user.');
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const cleanStr = (s) => String(s || '').replace(/[^\x00-\x7F]/g, "").trim();
-
-      doc.setFontSize(16);
-      doc.text(`Giftoo - Statement: @${cleanStr(targetUser.username)}`, 14, 18);
-      doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 14, 25);
-
-      const tableRows = userTransactions.map((tx, idx) => [
-        idx + 1, new Date(tx.date).toLocaleDateString('en-IN'), cleanStr(tx.title), cleanStr(tx.category), tx.type.toUpperCase(), `Rs.${tx.amount}`
-      ]);
-
-      doc.autoTable({
-        startY: 32,
-        head: [['#', 'Date', 'Description', 'Category', 'Type', 'Amount']],
-        body: tableRows,
-        styles: { fontSize: 8 }
-      });
-
-      doc.save(`Giftoo_Statement_${cleanStr(targetUser.username)}.pdf`);
     }
 
     initProfile();
