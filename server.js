@@ -69,20 +69,9 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
 });
 
-// Single Page Application (SPA) Routes
 app.get(['/', '/history', '/analytics', '/admin'], (req, res) => {
   if (!req.session.user) return res.redirect('/login');
   res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/users', (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/');
-  res.sendFile(path.join(__dirname, 'users.html'));
-});
-
-app.get('/profile', (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
-  res.sendFile(path.join(__dirname, 'profile.html'));
 });
 
 app.post('/api/login', async (req, res) => {
@@ -116,17 +105,6 @@ app.get('/api/session', (req, res) => {
   res.json(req.session.user);
 });
 
-app.get('/api/users/:id', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ id: user._id, username: user.username, role: user.role });
-  } catch {
-    res.status(400).json({ error: 'Invalid User ID' });
-  }
-});
-
 app.get('/api/admin/users', async (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden' });
@@ -158,6 +136,7 @@ app.post('/api/admin/users', async (req, res) => {
   }
 });
 
+// DELETE USER ACCOUNT AND ALL ASSOCIATED TRANSACTIONS
 app.delete('/api/admin/users/:id', async (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(403).json({ error: 'Forbidden' });
@@ -174,6 +153,20 @@ app.delete('/api/admin/users/:id', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Delete operation failed' });
+  }
+});
+
+// DELETE INDIVIDUAL TRANSACTION
+app.delete('/api/admin/transactions/:id', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  try {
+    await Transaction.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete transaction' });
   }
 });
 
