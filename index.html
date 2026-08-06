@@ -5,18 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0b0f17">
   <link rel="manifest" href="/manifest.json">
-  <title>Giftoo Dashboard</title>
+  <title>Giftoo App</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     html, body {
       min-height: 100vh;
       min-height: -webkit-fill-available;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       background-color: #0b0f17;
       color: #f8fafc;
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -26,73 +27,53 @@
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    #tx-list::-webkit-scrollbar { width: 4px; }
-    #tx-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
   </style>
 </head>
-<body class="min-h-screen w-full p-3 pb-20 flex flex-col justify-between">
+<body class="min-h-screen w-full p-3 pb-20 flex flex-col max-w-2xl mx-auto">
 
-  <div class="space-y-3 w-full flex-1 flex flex-col justify-between max-w-2xl mx-auto">
-    <!-- HEADER -->
-    <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <div class="flex items-center bg-slate-900/60 p-1.5 rounded-xl border border-slate-700/50">
-          <svg class="h-7 w-auto" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="5" y="20" width="60" height="55" rx="6" fill="#65C9C0"/>
-            <rect x="2" y="15" width="66" height="12" rx="3" fill="#65C9C0"/>
-            <path d="M25 15C20 5 30 5 35 15Z" fill="#F472B6"/>
-            <path d="M45 15C50 5 40 5 35 15Z" fill="#F472B6"/>
-            <circle cx="25" cy="40" r="4" fill="#000"/>
-            <circle cx="45" cy="40" r="4" fill="#000"/>
-            <path d="M30 48Q35 53 40 48Z" fill="#F472B6" stroke="#000" stroke-width="1.5"/>
-            <text x="78" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" fill="#42C7BB">giftoo</text>
-          </svg>
-        </div>
+  <!-- TOP HEADER -->
+  <header class="glass-card p-3 rounded-2xl flex justify-between items-center mb-3">
+    <div class="flex items-center gap-2">
+      <div class="flex items-center bg-slate-900/60 p-1.5 rounded-xl border border-slate-700/50">
+        <svg class="h-7 w-auto" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="20" width="60" height="55" rx="6" fill="#65C9C0"/>
+          <rect x="2" y="15" width="66" height="12" rx="3" fill="#65C9C0"/>
+          <path d="M25 15C20 5 30 5 35 15Z" fill="#F472B6"/>
+          <path d="M45 15C50 5 40 5 35 15Z" fill="#F472B6"/>
+          <circle cx="25" cy="40" r="4" fill="#000"/>
+          <circle cx="45" cy="40" r="4" fill="#000"/>
+          <path d="M30 48Q35 53 40 48Z" fill="#F472B6" stroke="#000" stroke-width="1.5"/>
+          <text x="78" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="46" fill="#42C7BB">giftoo</text>
+        </svg>
       </div>
+    </div>
 
-      <div class="flex items-center gap-2">
-        <div class="text-right">
-          <span id="live-time" class="text-sm font-extrabold text-indigo-400 block leading-tight">--:--</span>
-          <span id="user-badge" class="text-[10px] text-sky-400 font-bold block">User</span>
-        </div>
-
-        <button onclick="toggleSidebar()" class="w-9 h-9 bg-slate-800/80 border border-slate-700 text-white rounded-xl flex items-center justify-center text-base font-bold">
-          ⋮
-        </button>
+    <div class="flex items-center gap-2">
+      <div class="text-right">
+        <span id="live-time" class="text-sm font-extrabold text-indigo-400 block leading-tight">--:--</span>
+        <span id="user-badge" class="text-[10px] text-sky-400 font-bold block">User</span>
       </div>
-    </header>
+      <button onclick="toggleSidebar()" class="w-9 h-9 bg-slate-800/80 border border-slate-700 text-white rounded-xl flex items-center justify-center text-base font-bold">⋮</button>
+    </div>
+  </header>
 
+  <!-- ================= VIEW 1: HOME TAB ================= -->
+  <main id="view-home" class="app-view space-y-3 flex-1 flex flex-col justify-between">
     <!-- OVERVIEW CARDS -->
     <section class="grid grid-cols-3 gap-2">
       <div class="glass-card p-3 rounded-2xl flex flex-col justify-between">
         <span class="text-[9px] font-bold text-slate-400 uppercase">Total Balance</span>
-        <h2 id="total-balance" class="text-base font-black text-white mt-1">₹0</h2>
+        <h2 id="home-total-balance" class="text-base font-black text-white mt-1">₹0</h2>
       </div>
       <div class="glass-card p-3 rounded-2xl border-emerald-500/20 flex flex-col justify-between">
         <span class="text-[9px] font-bold text-emerald-400 uppercase">Income</span>
-        <h2 id="total-income" class="text-base font-black text-emerald-400 mt-1">+₹0</h2>
+        <h2 id="home-total-income" class="text-base font-black text-emerald-400 mt-1">+₹0</h2>
       </div>
       <div class="glass-card p-3 rounded-2xl border-rose-500/20 flex flex-col justify-between">
         <span class="text-[9px] font-bold text-rose-400 uppercase">Expenses</span>
-        <h2 id="total-expense" class="text-base font-black text-rose-400 mt-1">-₹0</h2>
-      </div>
-    </section>
-
-    <!-- ADMIN-ONLY EXPENSE PIE CHART SECTION -->
-    <section id="pie-chart-section" class="glass-card p-3.5 rounded-2xl space-y-2 hidden">
-      <div class="flex justify-between items-center">
-        <span class="text-xs font-bold text-sky-400 uppercase block">📊 Expense Breakdown</span>
-        <select id="date-filter" onchange="fetchTransactions()" class="bg-slate-900/90 border border-slate-700 text-[11px] text-white rounded-lg px-2 py-1 font-bold">
-          <option value="all">All Time</option>
-          <option value="1w">Last 1 Week</option>
-          <option value="1m">Last 1 Month</option>
-          <option value="3m">Last 3 Months</option>
-          <option value="1y">Last 1 Year</option>
-        </select>
-      </div>
-
-      <div class="w-full h-44 flex items-center justify-center relative my-1">
-        <canvas id="expenseChart"></canvas>
+        <h2 id="home-total-expense" class="text-base font-black text-rose-400 mt-1">-₹0</h2>
       </div>
     </section>
 
@@ -127,62 +108,225 @@
       </form>
     </section>
 
-    <!-- TRANSACTIONS LIST -->
+    <!-- TOP 10 TRANSACTIONS FEED -->
     <section class="glass-card p-4 rounded-2xl space-y-3 flex-1 flex flex-col justify-between">
-      <div class="flex justify-between items-center">
-        <h2 id="feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Recent Activity (Top 10)</h2>
-      </div>
-
-      <ul id="tx-list" class="space-y-2 flex-1 max-h-56 overflow-y-auto pr-1"></ul>
-
-      <a href="/history" class="w-full bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700/80 font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-1.5 block">
-        <span>📜 View All Transactions →</span>
-      </a>
+      <h2 id="home-feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Recent Activity (Top 10)</h2>
+      <ul id="home-tx-list" class="space-y-2 flex-1 max-h-56 overflow-y-auto pr-1"></ul>
+      <button onclick="switchTab('history')" class="w-full bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700/80 font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-1.5 block">
+        📜 View All Transactions →
+      </button>
     </section>
-  </div>
+  </main>
+
+
+  <!-- ================= VIEW 2: HISTORY TAB ================= -->
+  <main id="view-history" class="app-view space-y-3 hidden flex-1 flex flex-col">
+    <section class="glass-card p-3 rounded-2xl flex justify-between items-center">
+      <h1 class="text-xs font-extrabold text-sky-400">📜 Full Transaction History</h1>
+    </section>
+
+    <section class="glass-card p-3.5 rounded-2xl space-y-2.5">
+      <input type="text" id="history-search" oninput="applyHistoryFilters()" placeholder="🔍 Search description..." class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-1">Type</label>
+          <select id="history-type" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
+            <option value="all">All Types ⚡</option>
+            <option value="expense">Expense 💸</option>
+            <option value="income">Income 💰</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-1">Timeframe</label>
+          <select id="history-time" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
+            <option value="all">All Time</option>
+            <option value="1w">Last 1 Wk</option>
+            <option value="1m">Last 1 Mo</option>
+            <option value="3m">Last 3 Mo</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-card p-3.5 rounded-2xl flex-1 flex flex-col justify-between space-y-2">
+      <div class="flex justify-between items-center px-1">
+        <span id="history-count" class="text-xs font-bold text-slate-400">0 records</span>
+        <span id="history-total" class="text-xs font-black text-amber-400">Total: ₹0</span>
+      </div>
+      <ul id="history-tx-list" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1 flex-1"></ul>
+    </section>
+  </main>
+
+
+  <!-- ================= VIEW 3: ANALYTICS TAB (ADMIN) ================= -->
+  <main id="view-analytics" class="app-view space-y-3 hidden flex-1 flex flex-col">
+    <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
+      <h1 class="text-xs font-extrabold text-indigo-400">📊 Expense Analytics Overview</h1>
+      <button onclick="exportAnalyticsPDF()" class="bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 px-3 py-1.5 rounded-xl text-xs font-extrabold">
+        Export Detailed PDF 📄
+      </button>
+    </header>
+
+    <section class="grid grid-cols-3 gap-2">
+      <div class="glass-card p-2.5 rounded-2xl text-center">
+        <span class="text-[9px] font-bold text-emerald-400 uppercase block">Total Income</span>
+        <h3 id="analytics-income" class="text-xs font-black text-emerald-400 mt-0.5">+₹0</h3>
+      </div>
+      <div class="glass-card p-2.5 rounded-2xl text-center">
+        <span class="text-[9px] font-bold text-rose-400 uppercase block">Total Expense</span>
+        <h3 id="analytics-expense" class="text-xs font-black text-rose-400 mt-0.5">-₹0</h3>
+      </div>
+      <div class="glass-card p-2.5 rounded-2xl text-center">
+        <span class="text-[9px] font-bold text-sky-400 uppercase block">Net Balance</span>
+        <h3 id="analytics-balance" class="text-xs font-black text-white mt-0.5">₹0</h3>
+      </div>
+    </section>
+
+    <section class="glass-card p-3 rounded-2xl space-y-2">
+      <input type="text" id="analytics-search" oninput="applyAnalyticsFilters()" placeholder="🔍 Search description or user..." class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2">
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">User</label>
+          <select id="analytics-user-filter" onchange="applyAnalyticsFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-1.5 font-bold">
+            <option value="all">All Users</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Type</label>
+          <select id="analytics-type-filter" onchange="applyAnalyticsFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-1.5 font-bold">
+            <option value="all">All Types</option>
+            <option value="expense">Expense 💸</option>
+            <option value="income">Income 💰</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Timeframe</label>
+          <select id="analytics-time-filter" onchange="applyAnalyticsFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-1.5 font-bold">
+            <option value="1m" selected>Last 1 Mo</option>
+            <option value="1w">Last 1 Wk</option>
+            <option value="3m">Last 3 Mo</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-card p-3 rounded-2xl space-y-1.5">
+      <h2 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">Category Spending Breakdown (%)</h2>
+      <div class="w-full h-36 flex items-center justify-center relative">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </section>
+
+    <section class="glass-card p-3 rounded-2xl space-y-2 flex-1">
+      <div class="flex justify-between items-center px-1">
+        <span id="analytics-record-count" class="text-xs font-bold text-slate-400">0 records</span>
+        <span id="analytics-filtered-total" class="text-xs font-black text-amber-400">Net: ₹0</span>
+      </div>
+      <ul id="analytics-tx-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></ul>
+    </section>
+  </main>
+
+
+  <!-- ================= VIEW 4: ADMIN TAB (ASSIGN) ================= -->
+  <main id="view-admin" class="app-view space-y-3 hidden flex-1 flex flex-col">
+    <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
+      <h1 class="text-xs font-extrabold text-amber-400">👑 Admin Operations</h1>
+      <span class="text-[10px] font-bold text-sky-400">Assign Expense</span>
+    </header>
+
+    <section class="glass-card p-4 rounded-2xl space-y-3">
+      <h2 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider">Assign Expense / Income to User</h2>
+      <form onsubmit="assignTransaction(event)" class="space-y-3">
+        <div>
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Select User</label>
+          <select id="admin-user-select" required class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
+            <option value="">Loading users...</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Description / Title</label>
+          <input type="text" id="assign-title" placeholder="e.g. Lunch expense" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Amount (₹)</label>
+            <input type="number" id="assign-amount" required min="1" step="any" placeholder="Amount" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+          </div>
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Type</label>
+            <select id="assign-type" onchange="toggleAssignCategoryVisibility()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
+              <option value="expense">Expense 💸</option>
+              <option value="income">Income 💰</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div id="assign-category-wrapper">
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Category</label>
+            <select id="assign-category" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
+              <option value="Auto 🛺">Auto 🛺</option>
+              <option value="Food 🍔">Food 🍔</option>
+              <option value="Party Payment 🥳">Party Payment 🥳</option>
+              <option value="Shopping 🛍️">Shopping 🛍️</option>
+              <option value="Bills ⚡">Bills ⚡</option>
+              <option value="Other Expenses 📦">Other Expenses 📦</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Date (Max -7 days)</label>
+            <input type="date" id="assign-date" required class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition duration-200 mt-2">
+          Assign Transaction 🚀
+        </button>
+      </form>
+    </section>
+  </main>
+
 
   <!-- FIXED BOTTOM NAVIGATION BAR -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 z-40 px-3 py-2">
+  <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 z-40 px-3 py-2">
     <div class="max-w-2xl mx-auto flex justify-around items-center">
       
-      <!-- Home Tab (Active Pill) -->
-      <a href="/" class="flex flex-col items-center gap-1 group">
-        <div class="bg-sky-500/20 text-sky-400 px-4 py-1 rounded-full flex items-center justify-center transition-all">
+      <button onclick="switchTab('home')" id="tab-home" class="flex flex-col items-center gap-1">
+        <div class="nav-pill bg-sky-500/20 text-sky-400 px-4 py-1 rounded-full flex items-center justify-center transition-all">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
         </div>
         <span class="text-[10px] font-bold text-sky-400">Home</span>
-      </a>
+      </button>
 
-      <!-- History Tab -->
-      <a href="/history" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
-        <div class="px-4 py-1 rounded-full flex items-center justify-center">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <button onclick="switchTab('history')" id="tab-history" class="flex flex-col items-center gap-1 text-slate-400">
+        <div class="nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 117 7 7.07 7.07 0 01-6-3.41l-1.42 1.42A8.92 8.92 0 0013 21a9 9 0 000-18zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8z"/></svg>
         </div>
         <span class="text-[10px] font-semibold">History</span>
-      </a>
+      </button>
 
-      <!-- Analytics Tab (Admin Only) -->
-      <a id="nav-analytics-tab" href="/analytics" class="hidden flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
-        <div class="px-4 py-1 rounded-full flex items-center justify-center">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+      <button onclick="switchTab('analytics')" id="tab-analytics" class="hidden flex flex-col items-center gap-1 text-slate-400">
+        <div class="nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
         </div>
         <span class="text-[10px] font-semibold">Analytics</span>
-      </a>
+      </button>
 
-      <!-- Admin Tab (Admin Only) -->
-      <a id="nav-admin-tab" href="/admin" class="hidden flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
-        <div class="px-4 py-1 rounded-full flex items-center justify-center">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+      <button onclick="switchTab('admin')" id="tab-admin" class="hidden flex flex-col items-center gap-1 text-slate-400">
+        <div class="nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
         <span class="text-[10px] font-semibold">Admin</span>
-      </a>
+      </button>
 
     </div>
   </nav>
 
   <!-- SIDEBAR DRAWER -->
   <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 hidden"></div>
-
   <aside id="sidebar" class="fixed top-0 right-0 h-full w-72 bg-slate-900/95 border-l border-slate-800 p-5 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between shadow-2xl">
     <div class="space-y-5">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -193,32 +337,14 @@
         <button onclick="toggleSidebar()" class="text-slate-400 font-bold text-base">✕</button>
       </div>
 
-      <div class="space-y-2.5">
-        <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block">Navigation</span>
-
-        <a href="/history" class="w-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 block">
-          <span>📜</span> Full Transaction History
+      <div id="admin-options" class="space-y-2.5">
+        <span class="text-[9px] font-extrabold text-amber-400 uppercase tracking-widest block">Admin Operations</span>
+        <a href="/users" class="w-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 block">
+          <span>👥</span> Manage Users List
         </a>
-
-        <div id="admin-options" class="space-y-2.5 pt-2">
-          <span class="text-[9px] font-extrabold text-amber-400 uppercase tracking-widest block">Admin Operations</span>
-          
-          <a href="/analytics" class="w-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 block">
-            <span>📊</span> Expense Analytics Overview
-          </a>
-
-          <a href="/admin" class="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 block">
-            <span>👑</span> Admin Portal (Assign Expenses)
-          </a>
-
-          <a href="/users" class="w-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2 block">
-            <span>👥</span> Manage Users List
-          </a>
-
-          <button onclick="openCreateUserModal()" class="w-full bg-slate-800 text-slate-200 border border-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2">
-            <span>👤+</span> Create User Credentials
-          </button>
-        </div>
+        <button onclick="openCreateUserModal()" class="w-full bg-slate-800 text-slate-200 border border-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2">
+          <span>👤+</span> Create User Credentials
+        </button>
       </div>
     </div>
 
@@ -249,31 +375,57 @@
 
     let currentUser = null;
     let transactionsData = [];
-    let myChart = null;
+    let filteredAnalyticsTx = [];
+    let categoryChartObj = null;
+
+    // 0ms INSTANT TAB SWITCHING
+    function switchTab(tabName) {
+      document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
+      document.getElementById(`view-${tabName}`).classList.remove('hidden');
+
+      const tabs = ['home', 'history', 'analytics', 'admin'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        if (btn) {
+          const pill = btn.querySelector('.nav-pill');
+          const txt = btn.querySelector('span');
+          if (t === tabName) {
+            pill.className = 'nav-pill bg-sky-500/20 text-sky-400 px-4 py-1 rounded-full flex items-center justify-center transition-all';
+            txt.className = 'text-[10px] font-bold text-sky-400';
+          } else {
+            pill.className = 'nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all';
+            txt.className = 'text-[10px] font-semibold text-slate-400';
+          }
+        }
+      });
+
+      if (tabName === 'analytics') applyAnalyticsFilters();
+      if (tabName === 'history') applyHistoryFilters();
+    }
 
     function toggleCategoryVisibility() {
-      const txType = document.getElementById('tx-type').value;
+      const type = document.getElementById('tx-type').value;
       const catSelect = document.getElementById('tx-category');
-      if (txType === 'income') {
-        catSelect.value = 'Other Expenses 📦';
-        catSelect.classList.add('hidden');
-      } else {
-        catSelect.classList.remove('hidden');
-      }
+      if (type === 'income') catSelect.classList.add('hidden');
+      else catSelect.classList.remove('hidden');
+    }
+
+    function toggleAssignCategoryVisibility() {
+      const type = document.getElementById('assign-type').value;
+      const catWrapper = document.getElementById('assign-category-wrapper');
+      if (type === 'income') catWrapper.style.display = 'none';
+      else catWrapper.style.display = 'block';
     }
 
     function setupDateLimits() {
-      const dateInput = document.getElementById('tx-date');
-      const today = new Date();
-      const pastWeek = new Date();
-      pastWeek.setDate(today.getDate() - 7);
-
-      const todayStr = today.toISOString().split('T')[0];
+      const todayStr = new Date().toISOString().split('T')[0];
+      const pastWeek = new Date(); pastWeek.setDate(pastWeek.getDate() - 7);
       const pastWeekStr = pastWeek.toISOString().split('T')[0];
 
-      dateInput.value = todayStr;
-      dateInput.max = todayStr;
-      dateInput.min = pastWeekStr;
+      const d1 = document.getElementById('tx-date');
+      const d2 = document.getElementById('assign-date');
+      if (d1) { d1.value = todayStr; d1.max = todayStr; d1.min = pastWeekStr; }
+      if (d2) { d2.value = todayStr; d2.max = todayStr; d2.min = pastWeekStr; }
     }
 
     function updateClock() {
@@ -281,21 +433,13 @@
         timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true
       });
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+    setInterval(updateClock, 1000); updateClock();
 
     function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      const isOpen = !sidebar.classList.contains('translate-x-full');
-
-      if (isOpen) {
-        sidebar.classList.add('translate-x-full');
-        overlay.classList.add('hidden');
-      } else {
-        sidebar.classList.remove('translate-x-full');
-        overlay.classList.remove('hidden');
-      }
+      const s = document.getElementById('sidebar');
+      const o = document.getElementById('sidebar-overlay');
+      s.classList.toggle('translate-x-full');
+      o.classList.toggle('hidden');
     }
 
     function openCreateUserModal() { document.getElementById('user-modal').classList.remove('hidden'); }
@@ -310,88 +454,229 @@
         document.getElementById('user-badge').innerText = `@${currentUser.username}`;
         document.getElementById('sidebar-user-info').innerText = `@${currentUser.username} (${currentUser.role})`;
 
-        const adminOptions = document.getElementById('admin-options');
-        const pieSection = document.getElementById('pie-chart-section');
-        const navAnalytics = document.getElementById('nav-analytics-tab');
-        const navAdmin = document.getElementById('nav-admin-tab');
-
         if (currentUser.role === 'admin') {
-          adminOptions.style.display = 'block';
-          pieSection.classList.remove('hidden');
-          navAnalytics.classList.remove('hidden');
-          navAdmin.classList.remove('hidden');
+          document.getElementById('admin-options').style.display = 'block';
+          document.getElementById('tab-analytics').classList.remove('hidden');
+          document.getElementById('tab-admin').classList.remove('hidden');
           document.getElementById('user-logger-section').classList.add('hidden');
-          document.getElementById('feed-title').innerHTML = `<span>👑</span> Global Feed (Top 10)`;
+          document.getElementById('home-feed-title').innerHTML = `<span>👑</span> Global Feed (Top 10)`;
+
+          const usersRes = await fetch('/api/admin/users');
+          const users = await usersRes.json();
+          const sel1 = document.getElementById('analytics-user-filter');
+          const sel2 = document.getElementById('admin-user-select');
+          users.forEach(u => {
+            sel1.appendChild(new Option(`@${u.username}`, u.id));
+            sel2.appendChild(new Option(`@${u.username} (${u.role})`, u.id));
+          });
         } else {
-          adminOptions.style.display = 'none';
-          pieSection.classList.add('hidden');
-          navAnalytics.classList.add('hidden');
-          navAdmin.classList.add('hidden');
+          document.getElementById('admin-options').style.display = 'none';
           document.getElementById('user-logger-section').classList.remove('hidden');
         }
 
         toggleCategoryVisibility();
+        toggleAssignCategoryVisibility();
         setupDateLimits();
         fetchTransactions();
-      } catch (err) {
+      } catch {
         window.location.href = '/login';
       }
     }
 
     async function fetchTransactions() {
-      const filter = document.getElementById('date-filter') ? document.getElementById('date-filter').value : 'all';
-      const res = await fetch(`/api/transactions?filter=${filter}`);
+      const res = await fetch('/api/transactions?filter=all');
       transactionsData = await res.json();
-      renderUI();
-      if (currentUser.role === 'admin') renderPieChart();
+      renderHomeUI();
+      applyHistoryFilters();
+      if (currentUser.role === 'admin') applyAnalyticsFilters();
     }
 
-    function renderUI() {
-      const list = document.getElementById('tx-list');
+    function renderHomeUI() {
+      const list = document.getElementById('home-tx-list');
       list.innerHTML = '';
-      let incomeSum = 0, expenseSum = 0;
+      let inc = 0, exp = 0;
 
       transactionsData.forEach(tx => {
-        if (tx.type === 'income') incomeSum += Number(tx.amount);
-        else expenseSum += Number(tx.amount);
+        if (tx.type === 'income') inc += Number(tx.amount);
+        else exp += Number(tx.amount);
       });
 
       const top10 = transactionsData.slice(0, 10);
-
       if (top10.length === 0) {
-        list.innerHTML = `<li class="text-center py-5 text-xs text-slate-500 font-medium">No transactions found.</li>`;
+        list.innerHTML = `<li class="text-center py-5 text-xs text-slate-500">No transactions found.</li>`;
       }
 
-      top10.forEach((tx) => {
-        const isIncome = tx.type === 'income';
+      top10.forEach(tx => {
+        const isInc = tx.type === 'income';
         const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-
         const li = document.createElement('li');
-        li.className = `flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border ${isIncome ? 'border-emerald-500/30' : 'border-slate-800'}`;
-
+        li.className = `flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border ${isInc ? 'border-emerald-500/30' : 'border-slate-800'}`;
         li.innerHTML = `
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg ${isIncome ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">
-              ${isIncome ? '⇣' : '⇡'}
-            </div>
+            <div class="w-8 h-8 rounded-lg ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
             <div>
               <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
-              <p class="text-[9px] font-semibold text-slate-400">
-                ${currentUser.role === 'admin' ? `<a href="/profile?id=${tx.userId}" class="text-amber-400 hover:underline font-bold">@${tx.username}</a> • ` : ''}${tx.category} • ${dateStr}
-              </p>
+              <p class="text-[9px] font-semibold text-slate-400">${currentUser.role === 'admin' ? `@${tx.username} • ` : ''}${tx.category} • ${dateStr}</p>
             </div>
           </div>
-          <span class="text-xs font-extrabold ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
-            ${isIncome ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}
-          </span>
+          <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
         `;
         list.appendChild(li);
       });
 
-      const balance = incomeSum - expenseSum;
-      document.getElementById('total-balance').innerText = `₹${balance.toLocaleString('en-IN')}`;
-      document.getElementById('total-income').innerText = `+₹${incomeSum.toLocaleString('en-IN')}`;
-      document.getElementById('total-expense').innerText = `-₹${expenseSum.toLocaleString('en-IN')}`;
+      document.getElementById('home-total-balance').innerText = `₹${(inc - exp).toLocaleString('en-IN')}`;
+      document.getElementById('home-total-income').innerText = `+₹${inc.toLocaleString('en-IN')}`;
+      document.getElementById('home-total-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;
+    }
+
+    function applyHistoryFilters() {
+      const search = document.getElementById('history-search').value.toLowerCase().trim();
+      const type = document.getElementById('history-type').value;
+      const time = document.getElementById('history-time').value;
+
+      const filtered = transactionsData.filter(tx => {
+        const matchesSearch = (tx.title || '').toLowerCase().includes(search) || (tx.category || '').toLowerCase().includes(search);
+        const matchesType = type === 'all' || tx.type === type;
+        let matchesTime = true;
+        if (time !== 'all') {
+          const now = new Date(); let cutoff = new Date();
+          if (time === '1w') cutoff.setDate(now.getDate() - 7);
+          else if (time === '1m') cutoff.setMonth(now.getMonth() - 1);
+          else if (time === '3m') cutoff.setMonth(now.getMonth() - 3);
+          matchesTime = new Date(tx.date) >= cutoff;
+        }
+        return matchesSearch && matchesType && matchesTime;
+      });
+
+      const list = document.getElementById('history-tx-list');
+      list.innerHTML = '';
+      let net = 0;
+
+      filtered.forEach(tx => {
+        const isInc = tx.type === 'income';
+        if (isInc) net += Number(tx.amount); else net -= Number(tx.amount);
+        const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const li = document.createElement('li');
+        li.className = `flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border ${isInc ? 'border-emerald-500/30' : 'border-slate-800'}`;
+        li.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
+            <div>
+              <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
+              <p class="text-[9px] font-semibold text-slate-400">${currentUser.role === 'admin' ? `@${tx.username} • ` : ''}${tx.category} • ${dateStr}</p>
+            </div>
+          </div>
+          <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
+        `;
+        list.appendChild(li);
+      });
+
+      document.getElementById('history-count').innerText = `${filtered.length} records`;
+      document.getElementById('history-total').innerText = `Total: ₹${net.toLocaleString('en-IN')}`;
+    }
+
+    function applyAnalyticsFilters() {
+      const search = document.getElementById('analytics-search').value.toLowerCase().trim();
+      const type = document.getElementById('analytics-type-filter').value;
+      const time = document.getElementById('analytics-time-filter').value;
+      const userSel = document.getElementById('analytics-user-filter').value;
+
+      filteredAnalyticsTx = transactionsData.filter(tx => {
+        const matchesSearch = (tx.title || '').toLowerCase().includes(search) || (tx.category || '').toLowerCase().includes(search) || (tx.username || '').toLowerCase().includes(search);
+        const matchesType = type === 'all' || tx.type === type;
+        const matchesUser = userSel === 'all' || tx.userId === userSel;
+        let matchesTime = true;
+        if (time !== 'all') {
+          const now = new Date(); let cutoff = new Date();
+          if (time === '1w') cutoff.setDate(now.getDate() - 7);
+          else if (time === '1m') cutoff.setMonth(now.getMonth() - 1);
+          else if (time === '3m') cutoff.setMonth(now.getMonth() - 3);
+          matchesTime = new Date(tx.date) >= cutoff;
+        }
+        return matchesSearch && matchesType && matchesUser && matchesTime;
+      });
+
+      let inc = 0, exp = 0;
+      filteredAnalyticsTx.forEach(t => { if (t.type === 'income') inc += Number(t.amount); else exp += Number(t.amount); });
+
+      document.getElementById('analytics-income').innerText = `+₹${inc.toLocaleString('en-IN')}`;
+      document.getElementById('analytics-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;
+      document.getElementById('analytics-balance').innerText = `₹${(inc - exp).toLocaleString('en-IN')}`;
+
+      renderCategoryChart();
+      renderAnalyticsList();
+    }
+
+    function renderCategoryChart() {
+      const expenses = filteredAnalyticsTx.filter(t => t.type === 'expense');
+      const categoryTotals = {};
+      let totalExpenseSum = 0;
+
+      expenses.forEach(t => {
+        const cat = t.category.split(' ')[0];
+        const amt = Number(t.amount);
+        categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
+        totalExpenseSum += amt;
+      });
+
+      const catLabels = Object.keys(categoryTotals).map(c => {
+        const pct = totalExpenseSum > 0 ? Math.round((categoryTotals[c] / totalExpenseSum) * 100) : 0;
+        return `${c} (${pct}%)`;
+      });
+
+      const catCtx = document.getElementById('categoryChart').getContext('2d');
+      if (categoryChartObj) categoryChartObj.destroy();
+
+      categoryChartObj = new Chart(catCtx, {
+        type: 'pie',
+        data: {
+          labels: catLabels.length > 0 ? catLabels : ['No Expenses'],
+          datasets: [{
+            data: Object.values(categoryTotals).length > 0 ? Object.values(categoryTotals) : [1],
+            backgroundColor: ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#f8fafc', font: { size: 9, weight: 'bold' } } },
+            datalabels: {
+              color: '#ffffff',
+              font: { weight: '800', size: 10 },
+              formatter: (val) => totalExpenseSum > 0 ? `${Math.round((val / totalExpenseSum) * 100)}%` : ''
+            }
+          }
+        }
+      });
+    }
+
+    function renderAnalyticsList() {
+      const list = document.getElementById('analytics-tx-list');
+      list.innerHTML = '';
+      let netTotal = 0;
+
+      filteredAnalyticsTx.forEach(tx => {
+        const isInc = tx.type === 'income';
+        if (isInc) netTotal += Number(tx.amount); else netTotal -= Number(tx.amount);
+        const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const li = document.createElement('li');
+        li.className = `flex items-center justify-between p-2.5 bg-slate-900/80 rounded-xl border ${isInc ? 'border-emerald-500/30' : 'border-slate-800'}`;
+        li.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
+            <div>
+              <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
+              <p class="text-[9px] font-semibold text-slate-400"><span class="text-amber-400 font-bold">@${tx.username}</span> • ${tx.category} • ${dateStr}</p>
+            </div>
+          </div>
+          <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
+        `;
+        list.appendChild(li);
+      });
+
+      document.getElementById('analytics-record-count').innerText = `${filteredAnalyticsTx.length} records`;
+      document.getElementById('analytics-filtered-total').innerText = `Net Total: ₹${netTotal.toLocaleString('en-IN')}`;
     }
 
     async function addUserTransaction(e) {
@@ -413,6 +698,35 @@
         document.getElementById('tx-amount').value = '';
         setupDateLimits();
         fetchTransactions();
+      }
+    }
+
+    async function assignTransaction(e) {
+      e.preventDefault();
+      const targetUserId = document.getElementById('admin-user-select').value;
+      const title = document.getElementById('assign-title').value.trim();
+      const amount = document.getElementById('assign-amount').value;
+      const type = document.getElementById('assign-type').value;
+      const category = type === 'income' ? 'Income 💰' : document.getElementById('assign-category').value;
+      const date = document.getElementById('assign-date').value;
+
+      if (!targetUserId) return alert('Please select a user');
+
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId, title, amount, type, category, date })
+      });
+
+      if (res.ok) {
+        alert('Transaction assigned successfully!');
+        document.getElementById('assign-title').value = '';
+        document.getElementById('assign-amount').value = '';
+        setupDateLimits();
+        fetchTransactions();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to assign transaction');
       }
     }
 
@@ -438,55 +752,63 @@
       }
     }
 
-    function renderPieChart() {
-      const categories = {};
-      let totalExpense = 0;
+    function exportAnalyticsPDF() {
+      if (filteredAnalyticsTx.length === 0) return alert('No transactions available to export.');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
 
-      transactionsData.filter(t => t.type === 'expense').forEach(t => {
-        const catName = t.category.split(' ')[0];
-        const amt = Number(t.amount);
-        categories[catName] = (categories[catName] || 0) + amt;
-        totalExpense += amt;
+      let inc = 0, exp = 0;
+      filteredAnalyticsTx.forEach(t => { if (t.type === 'income') inc += Number(t.amount); else exp += Number(t.amount); });
+      const net = inc - exp;
+      const cleanStr = (s) => String(s || '').replace(/[^\x00-\x7F]/g, "").trim();
+
+      doc.setFillColor(11, 15, 23); doc.rect(0, 0, 210, 36, 'F');
+      doc.setFillColor(66, 199, 187); doc.rect(14, 10, 4, 16, 'F');
+
+      doc.setTextColor(66, 199, 187); doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
+      doc.text("giftoo", 22, 18);
+
+      doc.setTextColor(248, 250, 252); doc.setFontSize(11);
+      doc.text("Financial Analytics Statement", 22, 24);
+
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(148, 163, 184);
+      doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 155, 22);
+
+      const cardY = 42, cardWidth = 56, cardHeight = 22;
+
+      doc.setFillColor(30, 41, 59); doc.setDrawColor(16, 185, 129); doc.setLineWidth(0.4);
+      doc.roundedRect(14, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
+      doc.text("TOTAL INCOME", 19, cardY + 7);
+      doc.setFontSize(12); doc.setTextColor(248, 250, 252);
+      doc.text(`+ Rs. ${inc.toLocaleString('en-IN')}`, 19, cardY + 16);
+
+      doc.setFillColor(30, 41, 59); doc.setDrawColor(239, 68, 68);
+      doc.roundedRect(77, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc.setFontSize(7.5); doc.setTextColor(239, 68, 68);
+      doc.text("TOTAL EXPENSES", 82, cardY + 7);
+      doc.setFontSize(12); doc.setTextColor(248, 250, 252);
+      doc.text(`- Rs. ${exp.toLocaleString('en-IN')}`, 82, cardY + 16);
+
+      doc.setFillColor(30, 41, 59); doc.setDrawColor(56, 189, 248);
+      doc.roundedRect(140, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc.setFontSize(7.5); doc.setTextColor(56, 189, 248);
+      doc.text("NET BALANCE", 145, cardY + 7);
+      doc.setFontSize(12); doc.setTextColor(248, 250, 252);
+      doc.text(`Rs. ${net.toLocaleString('en-IN')}`, 145, cardY + 16);
+
+      const tableRows = filteredAnalyticsTx.map((tx, i) => [
+        i + 1, cleanStr(tx.username), new Date(tx.date).toLocaleDateString('en-IN'), cleanStr(tx.title), cleanStr(tx.category), tx.type.toUpperCase(), `Rs. ${Number(tx.amount).toLocaleString('en-IN')}`
+      ]);
+
+      doc.autoTable({
+        startY: 70, head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']], body: tableRows, theme: 'striped',
+        headStyles: { fillColor: [15, 23, 42], textColor: [56, 189, 248], fontStyle: 'bold', fontSize: 9, cellPadding: 4 },
+        bodyStyles: { fontSize: 8.5, textColor: [30, 41, 59], cellPadding: 3.5 },
+        alternateRowStyles: { fillColor: [248, 250, 252] }
       });
 
-      const catNames = Object.keys(categories);
-      const data = Object.values(categories);
-
-      const labels = catNames.map(cat => {
-        const pct = totalExpense > 0 ? Math.round((categories[cat] / totalExpense) * 100) : 0;
-        return `${cat} ${pct}%`;
-      });
-
-      const ctx = document.getElementById('expenseChart').getContext('2d');
-      if (myChart) myChart.destroy();
-
-      myChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: labels.length > 0 ? labels : ['No Data'],
-          datasets: [{
-            data: data.length > 0 ? data : [1],
-            backgroundColor: data.length > 0 ? ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'] : ['#334155']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          layout: { padding: { top: 5, bottom: 5 } },
-          plugins: {
-            legend: { labels: { color: '#f8fafc', font: { size: 10, weight: 'bold' } } },
-            datalabels: {
-              color: '#ffffff',
-              font: { weight: '800', size: 11 },
-              formatter: (value) => {
-                if (totalExpense === 0 || data.length === 0) return '';
-                const pct = Math.round((value / totalExpense) * 100);
-                return pct >= 4 ? `${pct}%` : '';
-              }
-            }
-          }
-        }
-      });
+      doc.save(`Giftoo_Detailed_Analytics.pdf`);
     }
 
     initSession();
