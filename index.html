@@ -307,7 +307,7 @@
   </main>
 
   <!-- FIXED BOTTOM NAVIGATION BAR -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 z-40 px-3 py-2">
+  <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 z-40 px-3 py-2 hidden">
     <div class="max-w-2xl mx-auto flex justify-around items-center">
       
       <button onclick="switchTab('home')" id="tab-home" class="flex flex-col items-center gap-1">
@@ -486,6 +486,7 @@
         toggleCategoryVisibility();
         toggleAssignCategoryVisibility();
         setupDateLimits();
+        document.getElementById('bottom-nav').classList.remove('hidden');
         fetchTransactions();
       } catch {
         window.location.href = '/login';
