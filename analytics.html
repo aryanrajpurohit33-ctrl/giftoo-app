@@ -32,7 +32,7 @@
     </button>
   </header>
 
-  <!-- OVERVIEW METRIC CARDS -->
+  <!-- OVERVIEW METRIC CARDS (Dynamically updates based on filter selection) -->
   <section class="grid grid-cols-3 gap-2">
     <div class="glass-card p-2.5 rounded-2xl text-center">
       <span class="text-[9px] font-bold text-emerald-400 uppercase block">Total Income</span>
@@ -48,15 +48,7 @@
     </div>
   </section>
 
-  <!-- COMPACT CATEGORY PIE CHART SECTION -->
-  <section class="glass-card p-3 rounded-2xl space-y-1.5">
-    <h2 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">Category Spending Breakdown (%)</h2>
-    <div class="w-full h-40 flex items-center justify-center relative">
-      <canvas id="categoryChart"></canvas>
-    </div>
-  </section>
-
-  <!-- SEARCH & FILTER OPTIONS -->
+  <!-- SEARCH & FILTER OPTIONS (Positioned ABOVE Pie Chart, Default: 1 Month) -->
   <section class="glass-card p-3 rounded-2xl space-y-2">
     <input type="text" id="search-input" oninput="applyFilters()" placeholder="🔍 Search description or user..." class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2">
 
@@ -80,20 +72,29 @@
       <div>
         <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Timeframe</label>
         <select id="time-filter" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-1.5 font-bold">
-          <option value="all">All Time</option>
+          <option value="1m" selected>Last 1 Mo</option>
           <option value="1w">Last 1 Wk</option>
-          <option value="1m">Last 1 Mo</option>
           <option value="3m">Last 3 Mo</option>
+          <option value="1y">Last 1 Yr</option>
+          <option value="all">All Time</option>
         </select>
       </div>
+    </div>
+  </section>
+
+  <!-- COMPACT CATEGORY PIE CHART SECTION -->
+  <section class="glass-card p-3 rounded-2xl space-y-1.5">
+    <h2 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">Category Spending Breakdown (%)</h2>
+    <div class="w-full h-40 flex items-center justify-center relative">
+      <canvas id="categoryChart"></canvas>
     </div>
   </section>
 
   <!-- DETAILED TRANSACTIONS LIST BELOW -->
   <section class="glass-card p-3 rounded-2xl flex-1 space-y-2">
     <div class="flex justify-between items-center px-1">
-      <span id="record-count" class="text-xs font-bold text-slate-400">0 records</span>
-      <span id="filtered-total" class="text-xs font-black text-amber-400">Total: ₹0</span>
+      <span id="record-count" class="text-xs font-bold text-slate-400">0 records found</span>
+      <span id="filtered-total" class="text-xs font-black text-amber-400">Net Total: ₹0</span>
     </div>
     <ul id="full-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></ul>
   </section>
@@ -145,6 +146,7 @@
           if (time === '1w') cutoff.setDate(now.getDate() - 7);
           else if (time === '1m') cutoff.setMonth(now.getMonth() - 1);
           else if (time === '3m') cutoff.setMonth(now.getMonth() - 3);
+          else if (time === '1y') cutoff.setFullYear(now.getFullYear() - 1);
           matchesTime = new Date(tx.date) >= cutoff;
         }
 
@@ -268,11 +270,11 @@
 
       const cleanStr = (s) => String(s || '').replace(/[^\x00-\x7F]/g, "").trim();
 
-      // 1. BRANDING HEADER
-      doc.setFillColor(11, 15, 23); // #0b0f17
+      // BRANDING HEADER
+      doc.setFillColor(11, 15, 23);
       doc.rect(0, 0, 210, 36, 'F');
 
-      doc.setFillColor(66, 199, 187); // Giftoo cyan accent line
+      doc.setFillColor(66, 199, 187);
       doc.rect(14, 10, 4, 16, 'F');
 
       doc.setTextColor(66, 199, 187);
@@ -289,14 +291,13 @@
       doc.setTextColor(148, 163, 184);
       doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 155, 22);
 
-      // 2. HIGH-CONTRAST METRICS CARDS
+      // HIGH-CONTRAST METRICS CARDS
       const cardY = 42;
       const cardWidth = 56;
       const cardHeight = 22;
 
-      // Total Income Card
-      doc.setFillColor(30, 41, 59); // Dark slate card
-      doc.setDrawColor(16, 185, 129); // Emerald border
+      doc.setFillColor(30, 41, 59);
+      doc.setDrawColor(16, 185, 129);
       doc.setLineWidth(0.4);
       doc.roundedRect(14, cardY, cardWidth, cardHeight, 3, 3, 'FD');
 
@@ -308,9 +309,8 @@
       doc.setTextColor(248, 250, 252);
       doc.text(`+ Rs. ${inc.toLocaleString('en-IN')}`, 19, cardY + 16);
 
-      // Total Expenses Card
       doc.setFillColor(30, 41, 59);
-      doc.setDrawColor(239, 68, 68); // Rose border
+      doc.setDrawColor(239, 68, 68);
       doc.roundedRect(77, cardY, cardWidth, cardHeight, 3, 3, 'FD');
 
       doc.setFontSize(7.5);
@@ -320,9 +320,8 @@
       doc.setTextColor(248, 250, 252);
       doc.text(`- Rs. ${exp.toLocaleString('en-IN')}`, 82, cardY + 16);
 
-      // Net Balance Card
       doc.setFillColor(30, 41, 59);
-      doc.setDrawColor(56, 189, 248); // Sky border
+      doc.setDrawColor(56, 189, 248);
       doc.roundedRect(140, cardY, cardWidth, cardHeight, 3, 3, 'FD');
 
       doc.setFontSize(7.5);
@@ -332,7 +331,7 @@
       doc.setTextColor(248, 250, 252);
       doc.text(`Rs. ${net.toLocaleString('en-IN')}`, 145, cardY + 16);
 
-      // 3. TABLE LEDGER
+      // TABLE LEDGER
       const tableRows = filteredTransactions.map((tx, i) => [
         i + 1,
         cleanStr(tx.username),
