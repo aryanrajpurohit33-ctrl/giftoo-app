@@ -104,7 +104,7 @@
         
         <div class="grid grid-cols-2 gap-2">
           <input type="number" id="tx-amount" placeholder="Amount (₹)" required min="1" step="any" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
-          <select id="tx-type" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+          <select id="tx-type" onchange="toggleCategoryVisibility()" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
             <option value="expense">Expense 💸</option>
             <option value="income">Income 💰</option>
           </select>
@@ -212,6 +212,17 @@
     let transactionsData = [];
     let myChart = null;
 
+    function toggleCategoryVisibility() {
+      const txType = document.getElementById('tx-type').value;
+      const catSelect = document.getElementById('tx-category');
+      if (txType === 'income') {
+        catSelect.value = 'Other Expenses 📦';
+        catSelect.classList.add('hidden');
+      } else {
+        catSelect.classList.remove('hidden');
+      }
+    }
+
     function setupDateLimits() {
       const dateInput = document.getElementById('tx-date');
       const today = new Date();
@@ -265,15 +276,16 @@
 
         if (currentUser.role === 'admin') {
           adminOptions.style.display = 'block';
-          pieSection.classList.remove('hidden'); // SHOW PIE CHART FOR ADMIN
+          pieSection.classList.remove('hidden');
           document.getElementById('user-logger-section').classList.add('hidden');
           document.getElementById('feed-title').innerHTML = `<span>👑</span> Global Feed (Top 10)`;
         } else {
           adminOptions.style.display = 'none';
-          pieSection.classList.add('hidden'); // HIDE PIE CHART FOR USERS
+          pieSection.classList.add('hidden');
           document.getElementById('user-logger-section').classList.remove('hidden');
         }
 
+        toggleCategoryVisibility();
         setupDateLimits();
         fetchTransactions();
       } catch (err) {
@@ -342,7 +354,7 @@
       const title = document.getElementById('tx-title').value.trim();
       const amount = document.getElementById('tx-amount').value;
       const type = document.getElementById('tx-type').value;
-      const category = document.getElementById('tx-category').value;
+      const category = type === 'income' ? 'Income 💰' : document.getElementById('tx-category').value;
       const date = document.getElementById('tx-date').value;
 
       const res = await fetch('/api/transactions', {
