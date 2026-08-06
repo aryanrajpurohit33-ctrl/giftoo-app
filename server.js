@@ -171,19 +171,6 @@ app.delete('/api/admin/users/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/admin/transactions/:id', async (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-
-  try {
-    await Transaction.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete transaction' });
-  }
-});
-
 app.get('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
 

@@ -235,7 +235,6 @@
       </button>
     </header>
 
-    <!-- ASSIGN FORM -->
     <section class="glass-card p-4 rounded-2xl space-y-3">
       <h2 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider">Assign Expense / Income to User</h2>
       <form onsubmit="assignTransaction(event)" class="space-y-3">
@@ -289,7 +288,6 @@
       </form>
     </section>
 
-    <!-- MANAGE USERS LIST INSIDE ADMIN VIEW -->
     <section class="glass-card p-4 rounded-2xl space-y-3">
       <div class="flex justify-between items-center">
         <h2 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">👥 Manage Registered Accounts</h2>
@@ -547,17 +545,6 @@
       }
     }
 
-    async function deleteSingleTransaction(txId, title) {
-      if (!confirm(`Delete transaction "${title}" from cloud database?`)) return;
-
-      const res = await fetch(`/api/admin/transactions/${txId}`, { method: 'DELETE' });
-      if (res.ok) {
-        fetchTransactions();
-      } else {
-        alert('Failed to delete transaction.');
-      }
-    }
-
     async function fetchTransactions() {
       const res = await fetch('/api/transactions?filter=all');
       transactionsData = await res.json();
@@ -600,12 +587,7 @@
               <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${currentUser.role === 'admin' ? `@${tx.username} • ` : ''}${tx.category} • ${dateStr}</p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
-            ${currentUser.role === 'admin' ? `
-              <button onclick="deleteSingleTransaction('${tx.id}', '${tx.title}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs">🗑️</button>
-            ` : ''}
-          </div>
+          <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
         `;
         list.appendChild(li);
       });
@@ -664,12 +646,7 @@
               <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${currentUser.role === 'admin' ? `@${tx.username} • ` : ''}${tx.category} • ${dateStr}</p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
-            ${currentUser.role === 'admin' ? `
-              <button onclick="deleteSingleTransaction('${tx.id}', '${tx.title}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs">🗑️</button>
-            ` : ''}
-          </div>
+          <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
         `;
         list.appendChild(li);
       });
@@ -777,12 +754,7 @@
               <p class="text-[10px] font-semibold text-slate-400 mt-0.5"><span class="text-amber-400 font-bold">@${tx.username}</span> • ${tx.category} • ${dateStr}</p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
-            ${currentUser.role === 'admin' ? `
-              <button onclick="deleteSingleTransaction('${tx.id}', '${tx.title}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs">🗑️</button>
-            ` : ''}
-          </div>
+          <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
         `;
         list.appendChild(li);
       });
