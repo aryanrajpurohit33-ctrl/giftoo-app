@@ -30,19 +30,27 @@
     </button>
   </header>
 
-  <!-- CATEGORY PIE CHART -->
-  <section class="glass-card p-4 rounded-2xl space-y-2">
-    <h2 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">Category Spending Breakdown (%)</h2>
-    <div class="w-full h-52 flex items-center justify-center">
-      <canvas id="categoryChart"></canvas>
+  <!-- OVERVIEW METRIC CARDS -->
+  <section class="grid grid-cols-3 gap-2">
+    <div class="glass-card p-3 rounded-2xl text-center">
+      <span class="text-[9px] font-bold text-emerald-400 uppercase block">Total Income</span>
+      <h3 id="analytics-income" class="text-sm font-black text-emerald-400 mt-1">+₹0</h3>
+    </div>
+    <div class="glass-card p-3 rounded-2xl text-center">
+      <span class="text-[9px] font-bold text-rose-400 uppercase block">Total Expense</span>
+      <h3 id="analytics-expense" class="text-sm font-black text-rose-400 mt-1">-₹0</h3>
+    </div>
+    <div class="glass-card p-3 rounded-2xl text-center">
+      <span class="text-[9px] font-bold text-sky-400 uppercase block">Net Balance</span>
+      <h3 id="analytics-balance" class="text-sm font-black text-white mt-1">₹0</h3>
     </div>
   </section>
 
-  <!-- USER SPENDING PIE CHART -->
-  <section class="glass-card p-4 rounded-2xl space-y-2">
-    <h2 class="text-xs font-extrabold text-amber-400 uppercase tracking-wider">User Expense Distribution (%)</h2>
-    <div class="w-full h-52 flex items-center justify-center">
-      <canvas id="userChart"></canvas>
+  <!-- CATEGORY SPENDING BREAKDOWN PIE CHART -->
+  <section class="glass-card p-4 rounded-2xl space-y-3">
+    <h2 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">Category Spending Breakdown (%)</h2>
+    <div class="w-full h-64 flex items-center justify-center relative">
+      <canvas id="categoryChart"></canvas>
     </div>
   </section>
 
@@ -51,7 +59,6 @@
 
     let allTransactions = [];
     let categoryChartObj = null;
-    let userChartObj = null;
 
     async function initAnalytics() {
       const sessionRes = await fetch('/api/session');
@@ -62,15 +69,27 @@
       const res = await fetch('/api/transactions?filter=all');
       allTransactions = await res.json();
 
-      renderCharts();
+      calculateMetrics();
+      renderCategoryChart();
     }
 
-    function renderCharts() {
-      const expenses = allTransactions.filter(t => t.type === 'expense');
+    function calculateMetrics() {
+      let inc = 0, exp = 0;
+      allTransactions.forEach(t => {
+        if (t.type === 'income') inc += Number(t.amount);
+        else exp += Number(t.amount);
+      });
 
-      // 1. CATEGORY BREAKDOWN
+      document.getElementById('analytics-income').innerText = `+₹${inc.toLocaleString('en-IN')}`;
+      document.getElementById('analytics-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;
+      document.getElementById('analytics-balance').innerText = `₹${(inc - exp).toLocaleString('en-IN')}`;
+    }
+
+    function renderCategoryChart() {
+      const expenses = allTransactions.filter(t => t.type === 'expense');
       const categoryTotals = {};
       let totalExpenseSum = 0;
+
       expenses.forEach(t => {
         const cat = t.category.split(' ')[0];
         const amt = Number(t.amount);
@@ -85,6 +104,7 @@
 
       const catCtx = document.getElementById('categoryChart').getContext('2d');
       if (categoryChartObj) categoryChartObj.destroy();
+
       categoryChartObj = new Chart(catCtx, {
         type: 'pie',
         data: {
@@ -98,48 +118,10 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { labels: { color: '#f8fafc', font: { size: 10, weight: 'bold' } } },
+            legend: { labels: { color: '#f8fafc', font: { size: 11, weight: 'bold' } } },
             datalabels: {
               color: '#ffffff',
-              font: { weight: '800', size: 11 },
-              formatter: (val) => totalExpenseSum > 0 ? `${Math.round((val / totalExpenseSum) * 100)}%` : ''
-            }
-          }
-        }
-      });
-
-      // 2. USER BREAKDOWN
-      const userTotals = {};
-      expenses.forEach(t => {
-        const u = `@${t.username}`;
-        const amt = Number(t.amount);
-        userTotals[u] = (userTotals[u] || 0) + amt;
-      });
-
-      const userLabels = Object.keys(userTotals).map(u => {
-        const pct = totalExpenseSum > 0 ? Math.round((userTotals[u] / totalExpenseSum) * 100) : 0;
-        return `${u} (${pct}%)`;
-      });
-
-      const userCtx = document.getElementById('userChart').getContext('2d');
-      if (userChartObj) userChartObj.destroy();
-      userChartObj = new Chart(userCtx, {
-        type: 'pie',
-        data: {
-          labels: userLabels.length > 0 ? userLabels : ['No Data'],
-          datasets: [{
-            data: Object.values(userTotals).length > 0 ? Object.values(userTotals) : [1],
-            backgroundColor: ['#38bdf8', '#a855f7', '#f43f5e', '#eab308', '#22c55e']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#f8fafc', font: { size: 10, weight: 'bold' } } },
-            datalabels: {
-              color: '#ffffff',
-              font: { weight: '800', size: 11 },
+              font: { weight: '800', size: 12 },
               formatter: (val) => totalExpenseSum > 0 ? `${Math.round((val / totalExpenseSum) * 100)}%` : ''
             }
           }
@@ -148,29 +130,88 @@
     }
 
     function exportAnalyticsPDF() {
-      if (allTransactions.length === 0) return alert('No transaction data found.');
+      if (allTransactions.length === 0) return alert('No transactions available for export.');
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
 
+      let inc = 0, exp = 0;
+      allTransactions.forEach(t => {
+        if (t.type === 'income') inc += Number(t.amount);
+        else exp += Number(t.amount);
+      });
+      const net = inc - exp;
+
       const cleanStr = (s) => String(s || '').replace(/[^\x00-\x7F]/g, "").trim();
 
-      doc.setFontSize(16);
-      doc.text("Giftoo - Expense Analytics Overview Report", 14, 18);
-      doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 14, 25);
+      // HEADER BRANDING
+      doc.setFillColor(15, 23, 42); // #0f172a dark navy
+      doc.rect(0, 0, 210, 40, 'F');
 
+      doc.setTextColor(66, 199, 187); // #42C7BB giftoo blue
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.text("giftoo", 14, 22);
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.text("Financial Analytics Statement", 14, 32);
+
+      doc.setFontSize(9);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 145, 32);
+
+      // FINANCIAL SUMMARY CARDS
+      doc.setDrawColor(51, 65, 85);
+      doc.setFillColor(30, 41, 59);
+
+      // Income Card
+      doc.roundedRect(14, 48, 58, 20, 3, 3, 'FD');
+      doc.setFontSize(8);
+      doc.setTextColor(16, 185, 129);
+      doc.text("TOTAL INCOME", 18, 55);
+      doc.setFontSize(11);
+      doc.text(`+ Rs. ${inc.toLocaleString('en-IN')}`, 18, 63);
+
+      // Expense Card
+      doc.roundedRect(76, 48, 58, 20, 3, 3, 'FD');
+      doc.setFontSize(8);
+      doc.setTextColor(239, 68, 68);
+      doc.text("TOTAL EXPENSES", 80, 55);
+      doc.setFontSize(11);
+      doc.text(`- Rs. ${exp.toLocaleString('en-IN')}`, 80, 63);
+
+      // Net Balance Card
+      doc.roundedRect(138, 48, 58, 20, 3, 3, 'FD');
+      doc.setFontSize(8);
+      doc.setTextColor(56, 189, 248);
+      doc.text("NET BALANCE", 142, 55);
+      doc.setFontSize(11);
+      doc.setTextColor(255, 255, 255);
+      doc.text(`Rs. ${net.toLocaleString('en-IN')}`, 142, 63);
+
+      // ITEMIZED TABLE
       const tableRows = allTransactions.map((tx, i) => [
-        i + 1, cleanStr(tx.username), new Date(tx.date).toLocaleDateString('en-IN'), cleanStr(tx.title), cleanStr(tx.category), tx.type.toUpperCase(), `Rs.${tx.amount}`
+        i + 1,
+        cleanStr(tx.username),
+        new Date(tx.date).toLocaleDateString('en-IN'),
+        cleanStr(tx.title),
+        cleanStr(tx.category),
+        tx.type.toUpperCase(),
+        `Rs. ${Number(tx.amount).toLocaleString('en-IN')}`
       ]);
 
       doc.autoTable({
-        startY: 32,
+        startY: 76,
         head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']],
         body: tableRows,
-        styles: { fontSize: 8 }
+        theme: 'grid',
+        headStyles: { fillColor: [15, 23, 42], textColor: [56, 189, 248], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        styles: { fontSize: 8.5, cellPadding: 3 }
       });
 
-      doc.save(`Giftoo_Analytics_Overview.pdf`);
+      doc.save(`Giftoo_Detailed_Analytics.pdf`);
     }
 
     initAnalytics();
