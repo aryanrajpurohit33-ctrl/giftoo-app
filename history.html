@@ -15,7 +15,7 @@
     #full-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
   </style>
 </head>
-<body class="min-h-screen w-full p-3 flex flex-col gap-3 max-w-2xl mx-auto">
+<body class="min-h-screen w-full p-3 pb-20 flex flex-col gap-3 max-w-2xl mx-auto">
 
   <!-- TOP BAR -->
   <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
@@ -85,6 +85,45 @@
     <ul id="full-list" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></ul>
   </section>
 
+  <!-- FIXED BOTTOM NAVIGATION BAR -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 z-40 px-3 py-2">
+    <div class="max-w-2xl mx-auto flex justify-around items-center">
+      
+      <!-- Home Tab -->
+      <a href="/" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
+        <div class="px-4 py-1 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </div>
+        <span class="text-[10px] font-semibold">Home</span>
+      </a>
+
+      <!-- History Tab (Active Pill) -->
+      <a href="/history" class="flex flex-col items-center gap-1 group">
+        <div class="bg-sky-500/20 text-sky-400 px-4 py-1 rounded-full flex items-center justify-center transition-all">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 117 7 7.07 7.07 0 01-6-3.41l-1.42 1.42A8.92 8.92 0 0013 21a9 9 0 000-18zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8z"/></svg>
+        </div>
+        <span class="text-[10px] font-bold text-sky-400">History</span>
+      </a>
+
+      <!-- Analytics Tab (Admin Only) -->
+      <a id="nav-analytics-tab" href="/analytics" class="hidden flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
+        <div class="px-4 py-1 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+        </div>
+        <span class="text-[10px] font-semibold">Analytics</span>
+      </a>
+
+      <!-- Admin Tab (Admin Only) -->
+      <a id="nav-admin-tab" href="/admin" class="hidden flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
+        <div class="px-4 py-1 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <span class="text-[10px] font-semibold">Admin</span>
+      </a>
+
+    </div>
+  </nav>
+
   <script>
     let rawTransactions = [];
     let filteredTransactions = [];
@@ -97,6 +136,9 @@
 
       if (currentUser.role === 'admin') {
         document.getElementById('user-filter-wrapper').classList.remove('hidden');
+        document.getElementById('nav-analytics-tab').classList.remove('hidden');
+        document.getElementById('nav-admin-tab').classList.remove('hidden');
+
         const usersRes = await fetch('/api/admin/users');
         const users = await usersRes.json();
         const userSelect = document.getElementById('user-filter');
