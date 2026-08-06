@@ -10,8 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -80,8 +78,8 @@
       </div>
     </section>
 
-    <!-- COMPACT EXPENSE PIE CHART -->
-    <section class="glass-card p-3.5 rounded-2xl space-y-2">
+    <!-- ADMIN-ONLY EXPENSE PIE CHART SECTION -->
+    <section id="pie-chart-section" class="glass-card p-3.5 rounded-2xl space-y-2 hidden">
       <div class="flex justify-between items-center">
         <span class="text-xs font-bold text-sky-400 uppercase block">📊 Expense Breakdown</span>
         <select id="date-filter" onchange="fetchTransactions()" class="bg-slate-900/90 border border-slate-700 text-[11px] text-white rounded-lg px-2 py-1 font-bold">
@@ -133,7 +131,6 @@
     <section class="glass-card p-4 rounded-2xl space-y-3 flex-1 flex flex-col justify-between">
       <div class="flex justify-between items-center">
         <h2 id="feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Recent Activity (Top 10)</h2>
-        <button onclick="exportPDF()" class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-bold">Export PDF 📄</button>
       </div>
 
       <ul id="tx-list" class="space-y-2 flex-1 max-h-56 overflow-y-auto pr-1"></ul>
@@ -264,12 +261,16 @@
         document.getElementById('sidebar-user-info').innerText = `@${currentUser.username} (${currentUser.role})`;
 
         const adminOptions = document.getElementById('admin-options');
+        const pieSection = document.getElementById('pie-chart-section');
+
         if (currentUser.role === 'admin') {
           adminOptions.style.display = 'block';
+          pieSection.classList.remove('hidden'); // SHOW PIE CHART FOR ADMIN
           document.getElementById('user-logger-section').classList.add('hidden');
           document.getElementById('feed-title').innerHTML = `<span>👑</span> Global Feed (Top 10)`;
         } else {
           adminOptions.style.display = 'none';
+          pieSection.classList.add('hidden'); // HIDE PIE CHART FOR USERS
           document.getElementById('user-logger-section').classList.remove('hidden');
         }
 
@@ -281,11 +282,11 @@
     }
 
     async function fetchTransactions() {
-      const filter = document.getElementById('date-filter').value;
+      const filter = document.getElementById('date-filter') ? document.getElementById('date-filter').value : 'all';
       const res = await fetch(`/api/transactions?filter=${filter}`);
       transactionsData = await res.json();
       renderUI();
-      renderPieChart();
+      if (currentUser.role === 'admin') renderPieChart();
     }
 
     function renderUI() {
@@ -429,25 +430,6 @@
           }
         }
       });
-    }
-
-    function exportPDF() {
-      if (transactionsData.length === 0) return alert('No transactions available.');
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Giftoo Statement", 14, 20);
-
-      const tableRows = transactionsData.slice(0, 10).map((tx, idx) => [
-        idx + 1, tx.username, new Date(tx.date).toLocaleDateString('en-IN'), tx.title, tx.category, tx.type.toUpperCase(), `Rs.${tx.amount}`
-      ]);
-
-      doc.autoTable({
-        startY: 30,
-        head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']],
-        body: tableRows
-      });
-
-      doc.save(`Giftoo_Recent_Report.pdf`);
     }
 
     initSession();
