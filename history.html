@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f17">
+  <link rel="manifest" href="/manifest.json">
+  <title>Transaction History - Giftoo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #f8fafc; }
+    .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    #full-list::-webkit-scrollbar { width: 4px; }
+    #full-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+  </style>
+</head>
+<body class="min-h-screen w-full p-3 flex flex-col gap-3 max-w-2xl mx-auto">
+
+  <!-- TOP BAR -->
+  <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <a href="/" class="w-8 h-8 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-xs font-bold text-slate-300">←</a>
+      <h1 class="text-sm font-extrabold text-sky-400">📜 Full Transaction History</h1>
+    </div>
+    <button onclick="exportPDF()" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg text-[11px] font-bold">PDF 📄</button>
+  </header>
+
+  <!-- SEARCH & FILTERS CARD -->
+  <section class="glass-card p-3.5 rounded-2xl space-y-2.5">
+    <!-- SEARCH BAR -->
+    <input type="text" id="search-input" oninput="applyFilters()" placeholder="🔍 Search title or description..." class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+
+    <div class="grid grid-cols-2 gap-2">
+      <!-- TYPE FILTER -->
+      <div>
+        <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Type</label>
+        <select id="type-filter" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
+          <option value="all">All Types ⚡</option>
+          <option value="expense">Expense 💸</option>
+          <option value="income">Income 💰</option>
+        </select>
+      </div>
+
+      <!-- TIMEFRAME FILTER -->
+      <div>
+        <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Timeframe</label>
+        <select id="time-filter" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
+          <option value="all">All Time</option>
+          <option value="1w">Last 1 Week</option>
+          <option value="1m">Last 1 Month</option>
+          <option value="3m">Last 3 Months</option>
+          <option value="1y">Last 1 Year</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2">
+      <!-- CATEGORY FILTER -->
+      <div>
+        <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Category</label>
+        <select id="category-filter" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
+          <option value="all">All Categories 🏷️</option>
+          <option value="Auto">Auto 🛺</option>
+          <option value="Food">Food 🍔</option>
+          <option value="Party">Party Payment 🥳</option>
+          <option value="Shopping">Shopping 🛍️</option>
+          <option value="Bills">Bills ⚡</option>
+          <option value="Other">Other Expenses 📦</option>
+        </select>
+      </div>
+
+      <!-- USER FILTER (ADMIN ONLY) -->
+      <div id="user-filter-wrapper" class="hidden">
+        <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Filter User</label>
+        <select id="user-filter" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
+          <option value="all">All Users 👥</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUMMARY COUNTER -->
+  <section class="flex justify-between items-center px-1">
+    <span id="record-count" class="text-xs font-bold text-slate-400">Showing 0 transactions</span>
+    <span id="filtered-total" class="text-xs font-black text-amber-400">Total: ₹0</span>
+  </section>
+
+  <!-- ALL TRANSACTIONS LIST -->
+  <section class="glass-card p-3.5 rounded-2xl flex-1 space-y-2">
+    <ul id="full-list" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></ul>
+  </section>
+
+  <script>
+    let rawTransactions = [];
+    let filteredTransactions = [];
+    let currentUser = null;
+
+    async function init() {
+      const sessionRes = await fetch('/api/session');
+      if (!sessionRes.ok) return window.location.href = '/login';
+      currentUser = await sessionRes.json();
+
+      if (currentUser.role === 'admin') {
+        document.getElementById('user-filter-wrapper').classList.remove('hidden');
+        const usersRes = await fetch('/api/admin/users');
+        const users = await usersRes.json();
+        const userSelect = document.getElementById('user-filter');
+        users.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.id;
+          opt.innerText = `@${u.username}`;
+          userSelect.appendChild(opt);
+        });
+      }
+
+      const res = await fetch('/api/transactions?filter=all');
+      rawTransactions = await res.json();
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('search-input').value.toLowerCase().trim();
+      const type = document.getElementById('type-filter').value;
+      const time = document.getElementById('time-filter').value;
+      const category = document.getElementById('category-filter').value;
+      const userSelect = document.getElementById('user-filter').value;
+
+      filteredTransactions = rawTransactions.filter(tx => {
+        const matchesSearch = (tx.title || '').toLowerCase().includes(search) || (tx.category || '').toLowerCase().includes(search);
+        const matchesType = type === 'all' || tx.type === type;
+        const matchesCat = category === 'all' || tx.category.toLowerCase().includes(category.toLowerCase());
+        const matchesUser = userSelect === 'all' || tx.userId === userSelect;
+
+        let matchesTime = true;
+        if (time !== 'all') {
+          const now = new Date();
+          let cutoff = new Date();
+          if (time === '1w') cutoff.setDate(now.getDate() - 7);
+          else if (time === '1m') cutoff.setMonth(now.getMonth() - 1);
+          else if (time === '3m') cutoff.setMonth(now.getMonth() - 3);
+          else if (time === '1y') cutoff.setFullYear(now.getFullYear() - 1);
+          matchesTime = new Date(tx.date) >= cutoff;
+        }
+
+        return matchesSearch && matchesType && matchesCat && matchesUser && matchesTime;
+      });
+
+      renderList();
+    }
+
+    function renderList() {
+      const list = document.getElementById('full-list');
+      list.innerHTML = '';
+
+      let totalAmount = 0;
+
+      if (filteredTransactions.length === 0) {
+        list.innerHTML = `<li class="text-center py-6 text-xs text-slate-500 font-medium">No matching transactions found.</li>`;
+      } else {
+        filteredTransactions.forEach(tx => {
+          const isIncome = tx.type === 'income';
+          if (isIncome) totalAmount += Number(tx.amount);
+          else totalAmount -= Number(tx.amount);
+
+          const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+          const li = document.createElement('li');
+          li.className = `flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border ${isIncome ? 'border-emerald-500/30' : 'border-slate-800'}`;
+          li.innerHTML = `
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg ${isIncome ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">
+                ${isIncome ? '⇣' : '⇡'}
+              </div>
+              <div>
+                <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
+                <p class="text-[9px] font-semibold text-slate-400">
+                  ${currentUser.role === 'admin' ? `<span class="text-amber-400 font-bold">@${tx.username}</span> • ` : ''}${tx.category} • ${dateStr}
+                </p>
+              </div>
+            </div>
+            <span class="text-xs font-extrabold ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
+              ${isIncome ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}
+            </span>
+          `;
+          list.appendChild(li);
+        });
+      }
+
+      document.getElementById('record-count').innerText = `Showing ${filteredTransactions.length} records`;
+      document.getElementById('filtered-total').innerText = `Net Total: ₹${totalAmount.toLocaleString('en-IN')}`;
+    }
+
+    function exportPDF() {
+      if (filteredTransactions.length === 0) return alert('No transactions to export.');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const cleanText = (str) => String(str || '').replace(/[^\x00-\x7F]/g, "").trim();
+
+      doc.text("Giftoo Full Transaction History", 14, 20);
+
+      const tableRows = filteredTransactions.map((tx, idx) => [
+        idx + 1, cleanText(tx.username), new Date(tx.date).toLocaleDateString('en-IN'), cleanText(tx.title), cleanText(tx.category), tx.type.toUpperCase(), `Rs.${tx.amount}`
+      ]);
+
+      doc.autoTable({
+        startY: 30,
+        head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']],
+        body: tableRows
+      });
+
+      doc.save(`Giftoo_History.pdf`);
+    }
+
+    init();
+  </script>
+</body>
+</html>

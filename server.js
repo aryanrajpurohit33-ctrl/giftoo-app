@@ -74,6 +74,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/history', (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  res.sendFile(path.join(__dirname, 'history.html'));
+});
+
 app.get('/admin', (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/');
   res.sendFile(path.join(__dirname, 'admin.html'));
@@ -211,7 +216,8 @@ app.get('/api/transactions', async (req, res) => {
       query.date = { $gte: cutoff };
     }
 
-    const transactions = await Transaction.find(query).sort({ date: -1 });
+    // Sort newest first by date and Mongo _id
+    const transactions = await Transaction.find(query).sort({ date: -1, _id: -1 });
     res.json(transactions.map(t => ({
       id: t._id,
       userId: t.userId,
