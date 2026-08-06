@@ -19,7 +19,7 @@
     #full-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
   </style>
 </head>
-<body class="min-h-screen w-full p-3 flex flex-col gap-3 max-w-2xl mx-auto">
+<body class="min-h-screen w-full p-3 pb-20 flex flex-col gap-3 max-w-2xl mx-auto">
 
   <!-- TOP BAR -->
   <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
@@ -32,7 +32,7 @@
     </button>
   </header>
 
-  <!-- OVERVIEW METRIC CARDS (Dynamically updates based on filter selection) -->
+  <!-- OVERVIEW METRIC CARDS -->
   <section class="grid grid-cols-3 gap-2">
     <div class="glass-card p-2.5 rounded-2xl text-center">
       <span class="text-[9px] font-bold text-emerald-400 uppercase block">Total Income</span>
@@ -48,7 +48,7 @@
     </div>
   </section>
 
-  <!-- SEARCH & FILTER OPTIONS (Positioned ABOVE Pie Chart, Default: 1 Month) -->
+  <!-- SEARCH & FILTER OPTIONS -->
   <section class="glass-card p-3 rounded-2xl space-y-2">
     <input type="text" id="search-input" oninput="applyFilters()" placeholder="🔍 Search description or user..." class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2">
 
@@ -98,6 +98,45 @@
     </div>
     <ul id="full-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></ul>
   </section>
+
+  <!-- FIXED BOTTOM NAVIGATION BAR -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 z-40 px-3 py-2">
+    <div class="max-w-2xl mx-auto flex justify-around items-center">
+      
+      <!-- Home Tab -->
+      <a href="/" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
+        <div class="px-4 py-1 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </div>
+        <span class="text-[10px] font-semibold">Home</span>
+      </a>
+
+      <!-- History Tab -->
+      <a href="/history" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
+        <div class="px-4 py-1 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <span class="text-[10px] font-semibold">History</span>
+      </a>
+
+      <!-- Analytics Tab (Active Pill) -->
+      <a href="/analytics" class="flex flex-col items-center gap-1 group">
+        <div class="bg-indigo-500/20 text-indigo-400 px-4 py-1 rounded-full flex items-center justify-center transition-all">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+        </div>
+        <span class="text-[10px] font-bold text-indigo-400">Analytics</span>
+      </a>
+
+      <!-- Admin Tab -->
+      <a href="/admin" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
+        <div class="px-4 py-1 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <span class="text-[10px] font-semibold">Admin</span>
+      </a>
+
+    </div>
+  </nav>
 
   <script>
     Chart.register(ChartDataLabels);
