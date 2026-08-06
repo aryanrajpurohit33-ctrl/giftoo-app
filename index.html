@@ -31,7 +31,7 @@
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
   </style>
 </head>
-<body class="min-h-screen w-full p-3 pb-24 flex flex-col max-w-2xl mx-auto">
+<body class="min-h-screen w-full p-3 pb-28 flex flex-col max-w-2xl mx-auto">
 
   <!-- TOP HEADER -->
   <header class="glass-card p-3 rounded-2xl flex justify-between items-center mb-3">
@@ -108,12 +108,17 @@
       </form>
     </section>
 
-    <!-- TOP 10 TRANSACTIONS FEED -->
+    <!-- TRANSACTION HISTORY FEED (20 Items Initial + "See more..." Pagination) -->
     <section class="glass-card p-4 rounded-2xl space-y-3 flex-1 flex flex-col justify-between">
-      <h2 id="home-feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Recent Activity (Top 10)</h2>
-      <ul id="home-tx-list" class="space-y-2 flex-1 max-h-64 overflow-y-auto pr-1"></ul>
-      <button onclick="switchTab('history')" class="w-full bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700/80 font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-1.5 block">
-        📜 View All Transactions →
+      <div class="flex justify-between items-center">
+        <h2 id="home-feed-title" class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">📜 Transaction History</h2>
+        <span id="home-feed-count" class="text-[10px] font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-lg border border-sky-500/20">0 records</span>
+      </div>
+
+      <ul id="home-tx-list" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1"></ul>
+
+      <button id="see-more-btn" onclick="loadMoreHomeTransactions()" class="w-full bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700/80 font-bold py-2.5 rounded-xl text-xs text-center flex items-center justify-center gap-1.5 hidden">
+        <span>👇 See more...</span>
       </button>
     </section>
   </main>
@@ -121,7 +126,7 @@
   <!-- ================= VIEW 2: HISTORY TAB ================= -->
   <main id="view-history" class="app-view space-y-3 hidden flex-1 flex flex-col">
     <section class="glass-card p-3 rounded-2xl flex justify-between items-center">
-      <h1 class="text-xs font-extrabold text-sky-400">📜 Full Transaction History</h1>
+      <h1 class="text-xs font-extrabold text-sky-400">📜 Full Search & Filter History</h1>
     </section>
 
     <section class="glass-card p-3.5 rounded-2xl space-y-2.5">
@@ -373,6 +378,7 @@
     let transactionsData = [];
     let filteredAnalyticsTx = [];
     let categoryChartObj = null;
+    let homeFeedLimit = 20;
 
     function switchTab(tabName) {
       document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
@@ -454,7 +460,6 @@
           document.getElementById('tab-analytics').classList.remove('hidden');
           document.getElementById('tab-admin').classList.remove('hidden');
           document.getElementById('user-logger-section').classList.add('hidden');
-          document.getElementById('home-feed-title').innerHTML = `<span>👑</span> Global Feed (Top 10)`;
 
           const usersRes = await fetch('/api/admin/users');
           const users = await usersRes.json();
@@ -486,6 +491,11 @@
       if (currentUser.role === 'admin') applyAnalyticsFilters();
     }
 
+    function loadMoreHomeTransactions() {
+      homeFeedLimit += 20;
+      renderHomeUI();
+    }
+
     function renderHomeUI() {
       const list = document.getElementById('home-tx-list');
       list.innerHTML = '';
@@ -496,12 +506,13 @@
         else exp += Number(tx.amount);
       });
 
-      const top10 = transactionsData.slice(0, 10);
-      if (top10.length === 0) {
+      const visibleTx = transactionsData.slice(0, homeFeedLimit);
+
+      if (visibleTx.length === 0) {
         list.innerHTML = `<li class="text-center py-5 text-xs text-slate-500">No transactions found.</li>`;
       }
 
-      top10.forEach(tx => {
+      visibleTx.forEach(tx => {
         const isInc = tx.type === 'income';
         const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
         const li = document.createElement('li');
@@ -519,6 +530,14 @@
         list.appendChild(li);
       });
 
+      const seeMoreBtn = document.getElementById('see-more-btn');
+      if (transactionsData.length > homeFeedLimit) {
+        seeMoreBtn.classList.remove('hidden');
+      } else {
+        seeMoreBtn.classList.add('hidden');
+      }
+
+      document.getElementById('home-feed-count').innerText = `${visibleTx.length} of ${transactionsData.length}`;
       document.getElementById('home-total-balance').innerText = `₹${(inc - exp).toLocaleString('en-IN')}`;
       document.getElementById('home-total-income').innerText = `+₹${inc.toLocaleString('en-IN')}`;
       document.getElementById('home-total-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;
