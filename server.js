@@ -61,6 +61,30 @@ async function updateAdminAccount() {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// VAPID & Push Notification Setup
+const PUBLIC_VAPID_KEY = process.env.PUBLIC_VAPID_KEY || 'BMzkR1VD3y2eNOI9jfe1JDxr8-BgnfizL3YoXJLViPzkY_fa-v3oYDNHWuM6GYzjdjSBtUz3NOLlaBnA9FbIhOU';
+const PRIVATE_VAPID_KEY = process.env.PRIVATE_VAPID_KEY || 'OFra9SaNaN2P8XaJeiuRmzLXzmEjnc2VUvLQ1ol7Wj8';
+
+webpush.setVapidDetails('mailto:admin@giftoo.app', PUBLIC_VAPID_KEY, PRIVATE_VAPID_KEY);
+
+app.post('/api/subscribe', async (req, res) => {
+  if (!req.session || !req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { subscription } = req.body || {};
+    if (!subscription) return res.status(400).json({ error: 'Invalid subscription data' });
+
+    await Subscription.findOneAndUpdate(
+      { userId: req.session.user.id },
+      { userId: req.session.user.id, subscription },
+      { upsert: true, new: true }
+    );
+    res.status(201).json({ success: true });
+  } catch (err) {
+    console.error('Subscription Endpoint Error:', err);
+    res.status(500).json({ error: 'Failed to save subscription' });
+  }
+});
+
 app.get('/sw.js', (req, res) => res.sendFile(path.join(__dirname, 'sw.js')));
 app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
