@@ -1,23 +1,17 @@
 {
-  "short_name": "Giftoo",
-  "name": "Giftoo Expense Tracker",
+  "short_name": "Money",
+  "name": "Money Expense Tracker",
   "icons": [
     {
       "src": "/icon.svg",
-      "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "sizes": "192x192 512x512",
       "purpose": "any maskable"
     }
   ],
   "start_url": "/",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#0b0f17",
+  "theme_color": "#0b0f17",
   "display": "standalone",
   "orientation": "portrait"
 }
