@@ -285,18 +285,38 @@
     </section>
 
     
-    <section class="glass-card p-4 rounded-2xl space-y-3">
-      <h2 class="text-xs font-extrabold text-amber-400 uppercase tracking-wider">🏷️ Create New Category</h2>
-      <form onsubmit="createCategory(event)" class="space-y-3">
-        <div>
-          <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Category Name (e.g. Fuel ⛽)</label>
-          <input type="text" id="new-category-input" required placeholder="Category Name & Emoji" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+    
+    <!-- COLLAPSIBLE CATEGORY MANAGEMENT DRAWER -->
+    <details class="glass-card rounded-2xl overflow-hidden border border-slate-800 group">
+      <summary class="p-4 flex items-center justify-between cursor-pointer select-none bg-slate-900/60 hover:bg-slate-900/80 transition">
+        <div class="flex items-center gap-2">
+          <span class="text-amber-400 font-extrabold text-xs">🏷️ Category Management</span>
         </div>
-        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition duration-200">
-          Add Category ➕
-        </button>
-      </form>
-    </section>
+        <span class="text-xs text-slate-400 font-bold group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+
+      <div class="p-4 space-y-4 border-t border-slate-800/80 bg-slate-950/40">
+        <!-- Add Category Form -->
+        <form onsubmit="createCategory(event)" class="space-y-2.5">
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block">Add New Category</label>
+          <div class="flex gap-2">
+            <input type="text" id="new-category-input" required placeholder="Name & Emoji (e.g. Fuel ⛽)" class="flex-1 bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+            <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 text-xs rounded-xl transition">
+              Add
+            </button>
+          </div>
+        </form>
+
+        <hr class="border-slate-800">
+
+        <!-- Remove Category List -->
+        <div class="space-y-2">
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block">Existing Categories</label>
+          <ul id="admin-category-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></ul>
+        </div>
+      </div>
+    </details>
+
 
     <section class="glass-card p-4 rounded-2xl space-y-3">
       <div class="flex justify-between items-center">
@@ -1029,19 +1049,43 @@
       try {
         const res = await fetch('/api/categories');
         const categories = await res.json();
-        
+
         const cat1 = document.getElementById('tx-category');
         const cat2 = document.getElementById('assign-category');
-        
+        const adminList = document.getElementById('admin-category-list');
+
         if (cat1) cat1.innerHTML = '';
         if (cat2) cat2.innerHTML = '';
-        
+        if (adminList) adminList.innerHTML = '';
+
         categories.forEach(c => {
           if (cat1) cat1.appendChild(new Option(c.name, c.name));
           if (cat2) cat2.appendChild(new Option(c.name, c.name));
+
+          if (adminList) {
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between p-2.5 bg-slate-900/90 rounded-xl border border-slate-800/80';
+            li.innerHTML = `
+              <span class="text-xs font-bold text-slate-200">${c.name}</span>
+              <button onclick="deleteCategory('${c._id}', '${c.name}')" class="text-[10px] font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-2.5 py-1 rounded-lg transition">
+                Remove 🗑️
+              </button>
+            `;
+            adminList.appendChild(li);
+          }
         });
       } catch (err) {
         console.error('Error fetching categories:', err);
+      }
+    }
+
+    async function deleteCategory(id, name) {
+      if (!confirm(`Delete category "${name}"?`)) return;
+      const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchCategories();
+      } else {
+        alert('Failed to delete category');
       }
     }
 

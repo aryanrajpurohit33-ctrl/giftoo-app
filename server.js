@@ -220,6 +220,17 @@ app.post('/api/admin/categories', async (req, res) => {
   }
 });
 
+
+app.delete('/api/admin/categories/:id', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  try {
+    await Category.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: 'Failed to delete category' });
+  }
+});
+
 app.get('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
   try {
