@@ -33,6 +33,7 @@ const transactionSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   type: { type: String, required: true },
   category: { type: String, required: true },
+  isCompany: { type: Boolean, default: false },
   date: { type: Date, default: Date.now }
 });
 
@@ -249,6 +250,48 @@ app.delete('/api/admin/categories/:id', async (req, res) => {
   }
 });
 
+
+app.get('/api/company-transactions', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const transactions = await Transaction.find({ userId: req.session.user.id, isCompany: true }).sort({ date: -1, _id: -1 });
+    res.json(transactions.map(t => ({
+      id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category, date: t.date
+    })));
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch company transactions' });
+  }
+});
+
+app.post('/api/company-transactions', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { title, amount, type, category, date } = req.body;
+    if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Invalid amount' });
+
+    let selectedDate = new Date();
+    if (date) {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate)) selectedDate = parsedDate;
+    }
+
+    const newTx = await Transaction.create({
+      userId: req.session.user.id,
+      username: req.session.user.username,
+      title: title && title.trim() !== '' ? title.trim() : category.split(' ')[0],
+      amount: parseFloat(amount),
+      type,
+      category,
+      date: selectedDate,
+      isCompany: true
+    });
+
+    res.json({ success: true, transaction: newTx });
+  } catch {
+    res.status(500).json({ error: 'Failed to record company transaction' });
+  }
+});
+
 app.get('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
   try {
@@ -257,7 +300,7 @@ app.get('/api/transactions', async (req, res) => {
 
     if (req.session.user.role !== 'admin') {
       // Regular user sees only their own
-      query.userId = req.session.user.id;
+      query.userId = req.session.user.id; query.isCompany = { $ne: true };
     } else {
       // Admin sees only users created by this admin + admin's own transactions
       const domainUsers = await User.find({ createdBy: req.session.user.id });
