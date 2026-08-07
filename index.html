@@ -522,7 +522,7 @@
           document.getElementById('admin-options').style.display = 'block';
           document.getElementById('tab-analytics').classList.remove('hidden');
           document.getElementById('tab-admin').classList.remove('hidden');
-          document.getElementById('user-logger-section').classList.add('hidden');
+          document.getElementById('user-logger-section').classList.remove('hidden');
 
           fetchAdminUsers();
         } else {
@@ -620,12 +620,15 @@
       list.innerHTML = '';
       let inc = 0, exp = 0;
 
-      transactionsData.forEach(tx => {
+      // Filter home feed strictly to current user's own transactions
+      const myTransactions = transactionsData.filter(tx => String(tx.userId) === String(currentUser.id));
+
+      myTransactions.forEach(tx => {
         if (tx.type === 'income') inc += Number(tx.amount);
         else exp += Number(tx.amount);
       });
 
-      const visibleTx = transactionsData.slice(0, homeFeedLimit);
+      const visibleTx = myTransactions.slice(0, homeFeedLimit);
 
       if (visibleTx.length === 0) {
         list.innerHTML = `<li class="text-center py-6 text-xs text-slate-500">No transactions found.</li>`;
@@ -641,7 +644,7 @@
             <div class="w-9 h-9 rounded-xl ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
             <div>
               <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
-              <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${currentUser.role === 'admin' ? `@${tx.username} • ` : ''}${tx.category} • ${dateStr}</p>
+              <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${tx.category} • ${dateStr}</p>
             </div>
           </div>
           <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
@@ -650,16 +653,16 @@
       });
 
       const seeMoreBtn = document.getElementById('see-more-btn');
-      if (transactionsData.length > homeFeedLimit) {
+      if (myTransactions.length > homeFeedLimit) {
         seeMoreBtn.classList.remove('hidden');
       } else {
         seeMoreBtn.classList.add('hidden');
       }
 
-      document.getElementById('home-feed-count').innerText = `${visibleTx.length} of ${transactionsData.length}`;
+      document.getElementById('home-feed-count').innerText = `${visibleTx.length} of ${myTransactions.length}`;
       document.getElementById('home-total-balance').innerText = `₹${(inc - exp).toLocaleString('en-IN')}`;
       document.getElementById('home-total-income').innerText = `+₹${inc.toLocaleString('en-IN')}`;
-      document.getElementById('home-total-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;
+      document.getElementById('home-total-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;;
     }
 
     function applyHistoryFilters() {
