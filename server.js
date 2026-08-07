@@ -14,6 +14,7 @@ mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
   .then(() => {
     console.log('✅ Connected permanently to MongoDB Atlas');
     updateAdminAccount();
+    seedCategories();
   })
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
@@ -37,6 +38,24 @@ const subscriptionSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
   subscription: { type: Object, required: true }
 });
+
+
+const categorySchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true }
+});
+const Category = mongoose.models.Category || mongoose.model('Category', categorySchema);
+
+async function seedCategories() {
+  try {
+    const count = await Category.countDocuments();
+    if (count === 0) {
+      const defaults = ["Rikshaw 🛺", "Food 🍔", "Party Payment 🥳", "Shopping 🛍️", "Bills ⚡", "Other Expenses 📦"];
+      await Category.insertMany(defaults.map(name => ({ name })));
+    }
+  } catch (err) {
+    console.error("Category seed error:", err);
+  }
+}
 
 const User = mongoose.model('User', userSchema);
 const Transaction = mongoose.model('Transaction', transactionSchema);
@@ -172,6 +191,32 @@ app.delete('/api/admin/users/:id', async (req, res) => {
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: 'Delete operation failed' });
+  }
+});
+
+
+app.get('/api/categories', async (req, res) => {
+  try {
+    const categories = await Category.find({});
+    res.json(categories);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+app.post('/api/admin/categories', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: 'Category name required' });
+    const trimmed = name.trim();
+    const existing = await Category.findOne({ name: trimmed });
+    if (existing) return res.status(400).json({ error: 'Category already exists' });
+
+    const newCategory = await Category.create({ name: trimmed });
+    res.json({ success: true, category: newCategory });
+  } catch {
+    res.status(500).json({ error: 'Failed to create category' });
   }
 });
 

@@ -138,56 +138,7 @@
     </section>
   </main>
 
-  <!-- ================= VIEW 2: HISTORY TAB ================= -->
-  <main id="view-history" class="app-view space-y-3 hidden">
-    <section class="glass-card p-3 rounded-2xl flex justify-between items-center">
-      <h1 class="text-xs font-extrabold text-sky-400">📜 Full Search & Filter History</h1>
-    </section>
-
-    <section class="glass-card p-3.5 rounded-2xl space-y-2.5">
-      <input type="text" id="history-search" oninput="applyHistoryFilters()" placeholder="🔍 Search description..." class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
-      <div class="grid grid-cols-2 gap-2">
-        <div>
-          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-1">Type</label>
-          <select id="history-type" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
-            <option value="all">All Types ⚡</option>
-            <option value="expense">Expense 💸</option>
-            <option value="income">Income 💰</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-1">Timeframe</label>
-          <select id="history-time" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
-            <option value="all">All Time</option>
-            <option value="1w">Last 1 Wk</option>
-            <option value="1m">Last 1 Mo</option>
-            <option value="3m">Last 3 Mo</option>
-            <option value="custom">Custom Range 📅</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- HISTORY CUSTOM DATE RANGE PICKER -->
-      <div id="history-custom-date-container" class="grid grid-cols-2 gap-2 pt-1 hidden">
-        <div>
-          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Start Date</label>
-          <input type="date" id="history-start-date" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
-        </div>
-        <div>
-          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">End Date</label>
-          <input type="date" id="history-end-date" onchange="applyHistoryFilters()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2 font-bold">
-        </div>
-      </div>
-    </section>
-
-    <section class="glass-card p-3.5 rounded-2xl space-y-3">
-      <div class="flex justify-between items-center px-1">
-        <span id="history-count" class="text-xs font-bold text-slate-400">0 records</span>
-        <span id="history-total" class="text-xs font-black text-amber-400">Total: ₹0</span>
-      </div>
-      <ul id="history-tx-list" class="space-y-2"></ul>
-    </section>
-  </main>
+  
 
   <!-- ================= VIEW 3: ANALYTICS TAB ================= -->
   <main id="view-analytics" class="app-view space-y-3 hidden">
@@ -333,6 +284,20 @@
       </form>
     </section>
 
+    
+    <section class="glass-card p-4 rounded-2xl space-y-3">
+      <h2 class="text-xs font-extrabold text-amber-400 uppercase tracking-wider">🏷️ Create New Category</h2>
+      <form onsubmit="createCategory(event)" class="space-y-3">
+        <div>
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Category Name (e.g. Fuel ⛽)</label>
+          <input type="text" id="new-category-input" required placeholder="Category Name & Emoji" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+        </div>
+        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition duration-200">
+          Add Category ➕
+        </button>
+      </form>
+    </section>
+
     <section class="glass-card p-4 rounded-2xl space-y-3">
       <div class="flex justify-between items-center">
         <h2 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">👥 Manage Registered Accounts</h2>
@@ -354,12 +319,7 @@
         <span class="text-[10px] font-bold text-sky-400">Home</span>
       </button>
 
-      <button onclick="switchTab('history')" id="tab-history" class="flex flex-col items-center gap-1 text-slate-400">
-        <div class="nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 117 7 7.07 7.07 0 01-6-3.41l-1.42 1.42A8.92 8.92 0 0013 21a9 9 0 000-18zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8z"/></svg>
-        </div>
-        <span class="text-[10px] font-semibold">History</span>
-      </button>
+      
 
       <button onclick="switchTab('analytics')" id="tab-analytics" class="hidden flex flex-col items-center gap-1 text-slate-400">
         <div class="nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all">
@@ -448,7 +408,7 @@
       document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
       document.getElementById(`view-${tabName}`).classList.remove('hidden');
 
-      const tabs = ['home', 'history', 'analytics', 'admin'];
+      const tabs = ['home', 'analytics', 'admin'];
       tabs.forEach(t => {
         const btn = document.getElementById(`tab-${t}`);
         if (btn) {
@@ -467,7 +427,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (tabName === 'analytics') applyAnalyticsFilters();
-      if (tabName === 'history') applyHistoryFilters();
+      
       if (tabName === 'admin') fetchAdminUsers();
     }
 
@@ -535,6 +495,7 @@
         setupDateLimits();
         document.getElementById('bottom-nav').classList.remove('hidden');
         fetchTransactions();
+        fetchCategories();
         checkNotificationPermissionBanner();
       } catch {
         window.location.href = '/login';
@@ -1061,6 +1022,49 @@
     async function requestNotificationFromBanner() {
       await subscribeUserToPush();
       checkNotificationPermissionBanner();
+    }
+
+    
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        const categories = await res.json();
+        
+        const cat1 = document.getElementById('tx-category');
+        const cat2 = document.getElementById('assign-category');
+        
+        if (cat1) cat1.innerHTML = '';
+        if (cat2) cat2.innerHTML = '';
+        
+        categories.forEach(c => {
+          if (cat1) cat1.appendChild(new Option(c.name, c.name));
+          if (cat2) cat2.appendChild(new Option(c.name, c.name));
+        });
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    }
+
+    async function createCategory(e) {
+      e.preventDefault();
+      const input = document.getElementById('new-category-input');
+      const name = input.value.trim();
+      if (!name) return;
+
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert('✅ New category added successfully!');
+        input.value = '';
+        fetchCategories();
+      } else {
+        alert(data.error || 'Failed to create category');
+      }
     }
 
     initSession();
