@@ -21,11 +21,13 @@ mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, default: 'user' }
+  role: { type: String, default: 'user' },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
 });
 
 const transactionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   username: { type: String, required: true },
   title: { type: String, required: true },
   amount: { type: Number, required: true },
@@ -63,14 +65,31 @@ const Subscription = mongoose.models.Subscription || mongoose.model('Subscriptio
 
 async function updateAdminAccount() {
   try {
-    let adminUser = await User.findOne({ role: 'admin' });
-    if (adminUser) {
-      adminUser.username = 'Giftoo';
-      adminUser.password = 'aditya1';
-      await adminUser.save();
+    // 1. Giftoo Admin
+    let giftooAdmin = await User.findOne({ username: 'Giftoo' });
+    if (giftooAdmin) {
+      giftooAdmin.password = 'aditya1';
+      giftooAdmin.role = 'admin';
+      await giftooAdmin.save();
     } else {
-      await User.create({ username: 'Giftoo', password: 'aditya1', role: 'admin' });
+      giftooAdmin = await User.create({ username: 'Giftoo', password: 'aditya1', role: 'admin' });
     }
+
+    // 2. Nekoo Admin
+    let nekooAdmin = await User.findOne({ username: 'Nekoo' });
+    if (nekooAdmin) {
+      nekooAdmin.password = '5669';
+      nekooAdmin.role = 'admin';
+      await nekooAdmin.save();
+    } else {
+      await User.create({ username: 'Nekoo', password: '5669', role: 'admin' });
+    }
+
+    // 3. Assign pre-existing unassigned users to Giftoo admin
+    await User.updateMany(
+      { role: 'user', $or: [{ createdBy: null }, { createdBy: { $exists: false } }] },
+      { createdBy: giftooAdmin._id }
+    );
   } catch (err) {
     console.error('Admin update error:', err);
   }
@@ -158,7 +177,7 @@ app.post('/api/subscribe', async (req, res) => {
 app.get('/api/admin/users', async (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   try {
-    const allUsers = await User.find({}, 'username password role');
+    const allUsers = await User.find({ createdBy: req.session.user.id }, 'username password role');
     res.json(allUsers.map(u => ({ id: u._id, username: u.username, password: u.password, role: u.role })));
   } catch {
     res.status(500).json({ error: 'Failed to fetch users' });
@@ -172,7 +191,7 @@ app.post('/api/admin/users', async (req, res) => {
     if (!username || !password) return res.status(400).json({ error: 'Required fields missing' });
     const existing = await User.findOne({ username });
     if (existing) return res.status(400).json({ error: 'Username exists' });
-    const newUser = await User.create({ username, password, role: 'user' });
+    const newUser = await User.create({ username, password, role: 'user', createdBy: req.session.user.id });
     res.json({ success: true, user: { id: newUser._id, username: newUser.username, role: newUser.role } });
   } catch {
     res.status(500).json({ error: 'Failed to create user' });
@@ -182,9 +201,8 @@ app.post('/api/admin/users', async (req, res) => {
 app.delete('/api/admin/users/:id', async (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   try {
-    const userToDelete = await User.findById(req.params.id);
-    if (!userToDelete) return res.status(404).json({ error: 'User not found' });
-    if (userToDelete.role === 'admin') return res.status(400).json({ error: 'Cannot delete admin account' });
+    const userToDelete = await User.findOne({ _id: req.params.id, createdBy: req.session.user.id });
+    if (!userToDelete) return res.status(404).json({ error: 'User not found in your domain' });
     await Transaction.deleteMany({ userId: req.params.id });
     await Subscription.deleteMany({ userId: req.params.id });
     await User.findByIdAndDelete(req.params.id);
@@ -236,8 +254,22 @@ app.get('/api/transactions', async (req, res) => {
   try {
     const { userId, filter } = req.query;
     let query = {};
-    if (req.session.user.role !== 'admin') query.userId = req.session.user.id;
-    else if (userId) query.userId = userId;
+
+    if (req.session.user.role !== 'admin') {
+      // Regular user sees only their own
+      query.userId = req.session.user.id;
+    } else {
+      // Admin sees only users created by this admin + admin's own transactions
+      const domainUsers = await User.find({ createdBy: req.session.user.id });
+      const domainUserIds = domainUsers.map(u => u._id.toString());
+      domainUserIds.push(req.session.user.id);
+
+      if (userId && domainUserIds.includes(userId)) {
+        query.userId = userId;
+      } else {
+        query.userId = { $in: domainUserIds };
+      }
+    }
 
     if (filter && filter !== 'all') {
       const now = new Date();
@@ -252,60 +284,6 @@ app.get('/api/transactions', async (req, res) => {
     res.json(transactions.map(t => ({
       id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category, date: t.date
     })));
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch transactions' });
-  }
-});
-
-app.post('/api/transactions', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const { targetUserId, title, amount, type, category, date } = req.body;
-    if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Invalid amount' });
-
-    let assignedUser = req.session.user;
-    if (req.session.user.role === 'admin' && targetUserId) {
-      const foundUser = await User.findById(targetUserId);
-      if (foundUser) assignedUser = { id: foundUser._id.toString(), username: foundUser.username };
-    }
-
-    let selectedDate = new Date();
-    if (date) {
-      const parsedDate = new Date(date);
-      const now = new Date();
-      const pastWeek = new Date();
-      pastWeek.setDate(now.getDate() - 7);
-      pastWeek.setHours(0, 0, 0, 0);
-      if (parsedDate >= pastWeek && parsedDate <= now) selectedDate = parsedDate;
-    }
-
-    const newTx = await Transaction.create({
-      userId: assignedUser.id,
-      username: assignedUser.username,
-      title: title !== '' ? title : category.split(' ')[0],
-      amount: parseFloat(amount),
-      type,
-      category,
-      date: selectedDate
-    });
-
-    // Trigger Push Notification if assigned by admin to another user
-    if (req.session.user.role === 'admin' && targetUserId && targetUserId !== req.session.user.id) {
-      try {
-        const subRecord = await Subscription.findOne({ userId: targetUserId });
-        if (subRecord && subRecord.subscription) {
-          const payload = JSON.stringify({
-            title: 'New Transaction Logged 💸',
-            body: `Admin logged ${type === 'income' ? '+' : '-'}₹${amount} for ${category}`
-          });
-          webpush.sendNotification(subRecord.subscription, payload).catch(e => console.error('Push delivery error:', e));
-        }
-      } catch (e) {
-        console.error('Error fetching subscription:', e);
-      }
-    }
-
-    res.json({ success: true, transaction: newTx });
   } catch {
     res.status(500).json({ error: 'Failed to record transaction' });
   }
