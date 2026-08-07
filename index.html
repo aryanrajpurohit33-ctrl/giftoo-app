@@ -171,7 +171,7 @@
         
         <div class="grid grid-cols-2 gap-2">
           <input type="number" id="company-tx-amount" placeholder="Amount (₹)" required min="1" step="any" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
-          <select id="company-tx-type" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
+          <select id="company-tx-type" onchange="toggleCompanyCategoryOptions()" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
             <option value="expense">Expense 💸</option>
             <option value="income">Income / Revenue 💰</option>
           </select>
