@@ -554,7 +554,9 @@
       const todayStr = new Date().toISOString().split('T')[0];
       const d1 = document.getElementById('tx-date');
       const d2 = document.getElementById('assign-date');
-      if (d1 && !d1.value) { d1.value = todayStr; d1.removeAttribute('max'); d1.removeAttribute('min'); }
+      if (d1) { d1.value = todayStr; d1.removeAttribute('max'); d1.removeAttribute('min'); }
+      if (d2) { d2.value = todayStr; d2.removeAttribute('max'); d2.removeAttribute('min'); }
+    }
       if (d2 && !d2.value) { d2.value = todayStr; d2.removeAttribute('max'); d2.removeAttribute('min'); }
     }
 
@@ -1266,7 +1268,7 @@
       const res = await fetch('/api/company-transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, amount, type, category, date })
+        body: JSON.stringify({ title, amount, type, category, date, mainCategory: document.getElementById('tx-main-category')?.value || 'Personal' })
       });
 
       if (res.ok) {
