@@ -179,8 +179,8 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-app.post('/api/admin/categories', async (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+app.post('/api/categories', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const { name } = req.body;
     if (!name || !name.trim()) return res.status(400).json({ error: 'Category name required' });

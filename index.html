@@ -98,39 +98,19 @@
     <section id="user-logger-section" class="glass-card p-4 rounded-2xl space-y-3">
       <h2 class="text-sm font-extrabold text-slate-100 flex items-center gap-2">➕ Log New Transaction</h2>
       <form id="tx-form" onsubmit="addUserTransaction(event)" class="space-y-2.5">
-        
-        <!-- TARGET PROJECT / MAIN CATEGORY -->
-        <div>
-          <label class="text-[9px] font-extrabold text-sky-400 uppercase block mb-1">Target Project / Main Category</label>
-          <div class="flex gap-2">
-            <select id="tx-main-category" class="flex-1 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
-              <option value="Personal">Personal 👤</option>
-              <option value="Home Construction">Home Construction 🏠</option>
-            </select>
-            <button type="button" onclick="openMainCategoryModal()" class="bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs px-3 rounded-lg font-bold">
-              + New
-            </button>
-          </div>
-        </div>
-
         <input type="text" id="tx-title" placeholder="Description (Optional)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
         
         <div class="grid grid-cols-2 gap-2">
           <input type="number" id="tx-amount" placeholder="Amount (₹)" required min="1" step="any" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
-          <select id="tx-type" onchange="toggleCategoryVisibility()" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+          <select id="tx-type" onchange="toggleCategoryVisibility()" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
             <option value="expense">Expense 💸</option>
             <option value="income">Income 💰</option>
           </select>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-          <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+          <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
             <option value="Rikshaw 🛺">Rikshaw 🛺</option>
-            <option value="Food 🍔">Food 🍔</option>
-            <option value="Party Payment 🥳">Party Payment 🥳</option>
-            <option value="Shopping 🛍️">Shopping 🛍️</option>
-            <option value="Bills ⚡">Bills ⚡</option>
-            <option value="Other Expenses 📦">Other Expenses 📦</option>
           </select>
 
           <!-- UNLIMITED DATE PICKER -->
@@ -338,14 +318,7 @@
         <div class="grid grid-cols-2 gap-2">
           <div id="assign-category-wrapper">
             <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Category</label>
-            <select id="assign-category" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
-              <option value="Rikshaw 🛺">Rikshaw 🛺</option>
-              <option value="Food 🍔">Food 🍔</option>
-              <option value="Party Payment 🥳">Party Payment 🥳</option>
-              <option value="Shopping 🛍️">Shopping 🛍️</option>
-              <option value="Bills ⚡">Bills ⚡</option>
-              <option value="Other Expenses 📦">Other Expenses 📦</option>
-            </select>
+            <select id="assign-category" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold"></select>
           </div>
           <div>
             <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Date</label>
@@ -358,35 +331,6 @@
         </button>
       </form>
     </section>
-
-    <!-- COLLAPSIBLE CATEGORY MANAGEMENT DRAWER -->
-    <details class="glass-card rounded-2xl overflow-hidden border border-slate-800 group">
-      <summary class="p-4 flex items-center justify-between cursor-pointer select-none bg-slate-900/60 hover:bg-slate-900/80 transition">
-        <div class="flex items-center gap-2">
-          <span class="text-amber-400 font-extrabold text-xs">🏷️ Category Management</span>
-        </div>
-        <span class="text-xs text-slate-400 font-bold group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-
-      <div class="p-4 space-y-4 border-t border-slate-800/80 bg-slate-950/40">
-        <form onsubmit="createCategory(event)" class="space-y-2.5">
-          <label class="text-[10px] font-extrabold text-slate-400 uppercase block">Add New Category</label>
-          <div class="flex gap-2">
-            <input type="text" id="new-category-input" required placeholder="Name & Emoji (e.g. Fuel ⛽)" class="flex-1 bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
-            <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 text-xs rounded-xl transition">
-              Add
-            </button>
-          </div>
-        </form>
-
-        <hr class="border-slate-800">
-
-        <div class="space-y-2">
-          <label class="text-[10px] font-extrabold text-slate-400 uppercase block">Existing Categories</label>
-          <ul id="admin-category-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></ul>
-        </div>
-      </div>
-    </details>
 
     <section class="glass-card p-4 rounded-2xl space-y-3">
       <h2 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">📢 Send Custom Push Notification</h2>
@@ -461,7 +405,7 @@
 
   <!-- SIDEBAR DRAWER -->
   <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 hidden"></div>
-  <aside id="sidebar" class="fixed top-0 right-0 h-full w-72 bg-slate-900/95 border-l border-slate-800 p-5 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between shadow-2xl">
+  <aside id="sidebar" class="fixed top-0 right-0 h-full w-72 bg-slate-900/95 border-l border-slate-800 p-5 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between shadow-2xl overflow-y-auto">
     <div class="space-y-5">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
@@ -469,6 +413,18 @@
           <p id="sidebar-user-info" class="text-xs text-sky-400 font-bold">@User</p>
         </div>
         <button onclick="toggleSidebar()" class="text-slate-400 font-bold text-base">✕</button>
+      </div>
+
+      <!-- CATEGORY MANAGER IN SIDEBAR DRAWER -->
+      <div class="space-y-2.5 border-b border-slate-800 pb-4">
+        <span class="text-[9px] font-extrabold text-amber-400 uppercase tracking-widest block">🏷️ Category Manager</span>
+        <form onsubmit="createCategory(event)" class="space-y-2">
+          <input type="text" id="sidebar-category-input" required placeholder="New Category (e.g. Fuel ⛽)" class="w-full bg-slate-950 border border-slate-700 text-xs text-white rounded-xl p-2">
+          <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-2 rounded-xl text-xs transition">
+            + Add Category
+          </button>
+        </form>
+        <ul id="sidebar-category-list" class="space-y-1.5 max-h-36 overflow-y-auto pt-1 pr-1"></ul>
       </div>
 
       <div class="space-y-2.5 pb-2">
@@ -504,20 +460,6 @@
         <input type="text" id="new-username" required placeholder="Username" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
         <input type="password" id="new-password" required placeholder="Password" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
         <button type="submit" class="w-full bg-amber-500 text-slate-950 font-extrabold py-2.5 rounded-lg text-xs">Save Credentials</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- CREATE MAIN CATEGORY MODAL -->
-  <div id="main-cat-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card p-5 rounded-2xl w-full max-w-xs space-y-3">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
-        <h3 class="text-xs font-extrabold text-sky-400">Add Main Category / Project</h3>
-        <button onclick="closeMainCategoryModal()" class="text-slate-400 font-bold text-xs">✕</button>
-      </div>
-      <form onsubmit="createMainCategory(event)" class="space-y-2.5">
-        <input type="text" id="new-main-cat-name" required placeholder="e.g. Home Construction 🏠" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
-        <button type="submit" class="w-full bg-sky-500 text-slate-950 font-extrabold py-2.5 rounded-lg text-xs">Save Category</button>
       </form>
     </div>
   </div>
@@ -639,46 +581,6 @@
     function openCreateUserModal() { document.getElementById('user-modal').classList.remove('hidden'); }
     function closeCreateUserModal() { document.getElementById('user-modal').classList.add('hidden'); }
 
-    function openMainCategoryModal() { document.getElementById('main-cat-modal').classList.remove('hidden'); }
-    function closeMainCategoryModal() { document.getElementById('main-cat-modal').classList.add('hidden'); }
-
-    async function fetchMainCategories() {
-      try {
-        const res = await fetch('/api/main-categories');
-        const mainCats = await res.json();
-        const sel = document.getElementById('tx-main-category');
-        if (sel && Array.isArray(mainCats)) {
-          sel.innerHTML = '';
-          mainCats.forEach(mc => {
-            sel.appendChild(new Option(mc.name, mc.name));
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching main categories:', err);
-      }
-    }
-
-    async function createMainCategory(e) {
-      e.preventDefault();
-      const name = document.getElementById('new-main-cat-name').value.trim();
-      if (!name) return;
-
-      const res = await fetch('/api/main-categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-
-      if (res.ok) {
-        document.getElementById('new-main-cat-name').value = '';
-        closeMainCategoryModal();
-        fetchMainCategories();
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to add main category');
-      }
-    }
-
     async function initSession() {
       preventBackToLogin();
       try {
@@ -711,7 +613,6 @@
         
         fetchTransactions();
         fetchCategories();
-        fetchMainCategories();
         checkNotificationPermissionBanner();
       } catch {
         window.location.href = '/login';
@@ -787,26 +688,28 @@
 
         const cat1 = document.getElementById('tx-category');
         const cat2 = document.getElementById('assign-category');
-        const adminList = document.getElementById('admin-category-list');
+        const sidebarList = document.getElementById('sidebar-category-list');
 
         if (cat1) cat1.innerHTML = '';
         if (cat2) cat2.innerHTML = '';
-        if (adminList) adminList.innerHTML = '';
+        if (sidebarList) sidebarList.innerHTML = '';
 
         categories.forEach(c => {
           if (cat1) cat1.appendChild(new Option(c.name, c.name));
           if (cat2) cat2.appendChild(new Option(c.name, c.name));
 
-          if (adminList) {
+          if (sidebarList) {
             const li = document.createElement('li');
-            li.className = 'flex items-center justify-between p-2.5 bg-slate-900/90 rounded-xl border border-slate-800/80';
+            li.className = 'flex items-center justify-between p-2 bg-slate-900 rounded-lg border border-slate-800';
             li.innerHTML = `
               <span class="text-xs font-bold text-slate-200">${c.name}</span>
-              <button onclick="deleteCategory('${c._id}', '${c.name}')" class="text-[10px] font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-2.5 py-1 rounded-lg transition">
-                Remove 🗑️
-              </button>
+              ${currentUser && currentUser.role === 'admin' ? `
+                <button onclick="deleteCategory('${c._id}', '${c.name}')" class="text-[10px] font-bold text-rose-400 hover:text-rose-300 transition">
+                  🗑️
+                </button>
+              ` : ''}
             `;
-            adminList.appendChild(li);
+            sidebarList.appendChild(li);
           }
         });
       } catch (err) {
@@ -816,11 +719,11 @@
 
     async function createCategory(e) {
       e.preventDefault();
-      const input = document.getElementById('new-category-input');
+      const input = document.getElementById('sidebar-category-input');
       const name = input.value.trim();
       if (!name) return;
 
-      const res = await fetch('/api/admin/categories', {
+      const res = await fetch('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name })
@@ -830,7 +733,8 @@
         input.value = '';
         fetchCategories();
       } else {
-        alert('Failed to create category');
+        const data = await res.json();
+        alert(data.error || 'Failed to create category');
       }
     }
 
@@ -877,7 +781,6 @@
       visibleTx.forEach(tx => {
         const isInc = tx.type === 'income';
         const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-        const mainCatStr = tx.mainCategory || 'Personal';
         const li = document.createElement('li');
         li.className = 'flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border ' + (isInc ? 'border-emerald-500/30' : 'border-slate-800');
         li.innerHTML = `
@@ -885,7 +788,7 @@
             <div class="w-9 h-9 rounded-xl ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
             <div>
               <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
-              <p class="text-[10px] font-semibold text-slate-400 mt-0.5"><span class="text-sky-400 font-bold">${mainCatStr}</span> • ${tx.category} • ${dateStr}</p>
+              <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${tx.category} • ${dateStr}</p>
             </div>
           </div>
           <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
@@ -962,12 +865,11 @@
       const type = document.getElementById('tx-type').value;
       const category = type === 'income' ? 'Income 💰' : document.getElementById('tx-category').value;
       const date = document.getElementById('tx-date').value;
-      const mainCategory = document.getElementById('tx-main-category')?.value || 'Personal';
 
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, amount, type, category, date, mainCategory })
+        body: JSON.stringify({ title, amount, type, category, date })
       });
 
       if (res.ok) {
