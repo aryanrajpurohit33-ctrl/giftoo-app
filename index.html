@@ -136,6 +136,56 @@
   </main>
 
   <!-- ================= VIEW 2: COMPANY TAB ================= -->
+  
+  <!-- ================= VIEW: MEASUREMENT CALCULATOR ================= -->
+  <main id="view-calc" class="app-view space-y-3 hidden">
+    <section class="glass-card p-3.5 rounded-2xl flex justify-between items-center border-amber-500/30">
+      <h1 class="text-xs font-extrabold text-amber-400 flex items-center gap-1.5">📐 Construction & Mistri Calculator</h1>
+      <span class="text-[10px] font-bold text-slate-400">Feet / Sq.Ft / RFT</span>
+    </section>
+
+    <!-- Calculator Selector Card -->
+    <section class="glass-card p-4 rounded-2xl space-y-3">
+      <div>
+        <label class="text-[10px] font-extrabold text-sky-400 uppercase block mb-1">Select Calculator Mode</label>
+        <select id="calc-mode" onchange="renderCalcInputs()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white font-bold rounded-xl p-2.5">
+          <option value="sqft">1. Simple Area (Length × Width) — Sq. Ft.</option>
+          <option value="rft">2. Running Feet (Linear Length) — RFT</option>
+          <option value="l_shape">3. L-Shaped Roof / Floor (2 Rectangles) — Sq. Ft.</option>
+          <option value="tank">4. Underground Water Tank (Walls + Floor + Liters)</option>
+        </select>
+      </div>
+
+      <div id="calc-input-container" class="space-y-2.5"></div>
+
+      <!-- Rate & Cost Summary -->
+      <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+        <div>
+          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Mistri Rate (₹)</label>
+          <input type="number" id="calc-rate" oninput="calculateCost()" placeholder="e.g. 35" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+        </div>
+        <div>
+          <label class="text-[9px] font-extrabold text-amber-400 uppercase block mb-0.5">Calculated Cost</label>
+          <div id="calc-cost-display" class="w-full bg-slate-900 border border-amber-500/30 text-amber-400 text-xs font-black rounded-lg p-2 flex items-center">₹0</div>
+        </div>
+      </div>
+
+      <button onclick="saveMeasurementRecord()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-xs transition">
+        Save Measurement to History 💾
+      </button>
+    </section>
+
+    <!-- History Section -->
+    <section class="glass-card p-4 rounded-2xl space-y-3">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xs font-extrabold text-slate-100 uppercase tracking-wider">📜 Saved Measurements</h2>
+        <span id="calc-history-total" class="text-xs font-black text-amber-400">Total: ₹0</span>
+      </div>
+
+      <ul id="calc-history-list" class="space-y-2"></ul>
+    </section>
+  </main>
+
   <main id="view-company" class="app-view space-y-3 hidden">
     <section class="glass-card p-3 rounded-2xl flex justify-between items-center border-sky-500/20">
       <h1 class="text-xs font-extrabold text-sky-400 flex items-center gap-1.5">💼 Company Finances</h1>
@@ -379,6 +429,14 @@
         <span class="text-[10px] font-bold text-sky-400">Home</span>
       </button>
 
+      
+      <button onclick="switchTab('calc')" id="tab-calc" class="flex flex-col items-center gap-1 text-slate-400">
+        <div class="nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        </div>
+        <span class="text-[10px] font-semibold">Calc 📐</span>
+      </button>
+
       <button onclick="switchTab('company')" id="tab-company" class="hidden flex flex-col items-center gap-1 text-slate-400">
         <div class="nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
@@ -486,7 +544,7 @@
       document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
       document.getElementById('view-' + tabName).classList.remove('hidden');
 
-      const tabs = ['home', 'company', 'analytics', 'admin'];
+      const tabs = ['home', 'calc', 'company', 'analytics', 'admin'];
       tabs.forEach(t => {
         const btn = document.getElementById('tab-' + t);
         if (btn) {
@@ -507,6 +565,7 @@
       if (tabName === 'analytics') applyAnalyticsFilters();
       if (tabName === 'admin') fetchAdminUsers();
       if (tabName === 'company') fetchCompanyTransactions();
+      if (tabName === 'calc') { renderCalcInputs(); fetchMeasurements(); }
     }
 
     function toggleCategoryVisibility() {
@@ -1208,6 +1267,182 @@
       });
 
       doc.save('Giftoo_Detailed_Analytics.pdf');
+    }
+
+    
+    let measurementHistory = [];
+
+    function renderCalcInputs() {
+      const mode = document.getElementById('calc-mode').value;
+      const container = document.getElementById('calc-input-container');
+      if (!container) return;
+
+      if (mode === 'sqft') {
+        container.innerHTML = `
+          <input type="text" id="calc-title" placeholder="Area Name (e.g. Living Room Floor)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Length (Feet)</label>
+              <input type="number" id="calc-l1" oninput="calculateCost()" placeholder="e.g. 20" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Width (Feet)</label>
+              <input type="number" id="calc-w1" oninput="calculateCost()" placeholder="e.g. 15" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            </div>
+          </div>
+        `;
+      } else if (mode === 'rft') {
+        container.innerHTML = `
+          <input type="text" id="calc-title" placeholder="Area Name (e.g. Boundary Wall / Skirting)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
+          <div>
+            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Total Length (Running Feet)</label>
+            <input type="number" id="calc-rft-len" oninput="calculateCost()" placeholder="e.g. 120" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+          </div>
+        `;
+      } else if (mode === 'l_shape') {
+        container.innerHTML = `
+          <input type="text" id="calc-title" placeholder="Area Name (e.g. L-Shaped Roof)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
+          <span class="text-[9px] font-extrabold text-sky-400 uppercase block">Part 1 (Section A)</span>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="number" id="calc-l1" oninput="calculateCost()" placeholder="Length A (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            <input type="number" id="calc-w1" oninput="calculateCost()" placeholder="Width A (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+          </div>
+          <span class="text-[9px] font-extrabold text-sky-400 uppercase block pt-1">Part 2 (Section B)</span>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="number" id="calc-l2" oninput="calculateCost()" placeholder="Length B (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            <input type="number" id="calc-w2" oninput="calculateCost()" placeholder="Width B (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+          </div>
+        `;
+      } else if (mode === 'tank') {
+        container.innerHTML = `
+          <input type="text" id="calc-title" placeholder="Tank Name (e.g. Underground Water Tank)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Length (ft)</label>
+              <input type="number" id="calc-tl" oninput="calculateCost()" placeholder="10" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold w-full">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Width (ft)</label>
+              <input type="number" id="calc-tw" oninput="calculateCost()" placeholder="8" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold w-full">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Depth (ft)</label>
+              <input type="number" id="calc-td" oninput="calculateCost()" placeholder="6" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold w-full">
+            </div>
+          </div>
+          <div id="tank-capacity-info" class="text-[10px] font-bold text-emerald-400 pt-1">Water Capacity: 0 Liters</div>
+        `;
+      }
+      calculateCost();
+    }
+
+    function calculateCost() {
+      const mode = document.getElementById('calc-mode').value;
+      const rate = parseFloat(document.getElementById('calc-rate')?.value) || 0;
+      let totalQty = 0;
+
+      if (mode === 'sqft') {
+        const l = parseFloat(document.getElementById('calc-l1')?.value) || 0;
+        const w = parseFloat(document.getElementById('calc-w1')?.value) || 0;
+        totalQty = l * w;
+      } else if (mode === 'rft') {
+        totalQty = parseFloat(document.getElementById('calc-rft-len')?.value) || 0;
+      } else if (mode === 'l_shape') {
+        const l1 = parseFloat(document.getElementById('calc-l1')?.value) || 0;
+        const w1 = parseFloat(document.getElementById('calc-w1')?.value) || 0;
+        const l2 = parseFloat(document.getElementById('calc-l2')?.value) || 0;
+        const w2 = parseFloat(document.getElementById('calc-w2')?.value) || 0;
+        totalQty = (l1 * w1) + (l2 * w2);
+      } else if (mode === 'tank') {
+        const l = parseFloat(document.getElementById('calc-tl')?.value) || 0;
+        const w = parseFloat(document.getElementById('calc-tw')?.value) || 0;
+        const d = parseFloat(document.getElementById('calc-td')?.value) || 0;
+        // 4 Inner Walls Area + Floor Area
+        totalQty = (2 * (l + w) * d) + (l * w);
+        const cubicFt = l * w * d;
+        const liters = Math.round(cubicFt * 28.317);
+        const capDiv = document.getElementById('tank-capacity-info');
+        if (capDiv) capDiv.innerText = `Water Capacity: ${liters.toLocaleString('en-IN')} Liters (${cubicFt} cu.ft)`;
+      }
+
+      const totalCost = totalQty * rate;
+      const unit = mode === 'rft' ? 'RFT' : 'Sq. Ft.';
+      document.getElementById('calc-cost-display').innerText = `₹${totalCost.toLocaleString('en-IN')} (${totalQty.toLocaleString('en-IN')} ${unit})`;
+      return { totalQty, unit, rate, totalCost };
+    }
+
+    async function saveMeasurementRecord() {
+      const mode = document.getElementById('calc-mode').value;
+      const titleInput = document.getElementById('calc-title')?.value.trim();
+      const title = titleInput || (mode === 'tank' ? 'Water Tank' : mode === 'l_shape' ? 'L-Shaped Roof' : 'Measurement Record');
+      const { totalQty, unit, rate, totalCost } = calculateCost();
+
+      if (totalQty <= 0) return alert('Please enter valid dimensions.');
+
+      let details = '';
+      if (mode === 'sqft' || mode === 'l_shape') details = `${totalQty} Sq. Ft. @ ₹${rate}/sqft`;
+      else if (mode === 'rft') details = `${totalQty} RFT @ ₹${rate}/rft`;
+      else if (mode === 'tank') details = `${totalQty} Sq. Ft. Plaster/Tile Area @ ₹${rate}/sqft`;
+
+      const res = await fetch('/api/measurements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, calcType: mode, details, totalQty, unit, rate, totalCost })
+      });
+
+      if (res.ok) {
+        alert('✅ Measurement saved!');
+        fetchMeasurements();
+      } else {
+        alert('Failed to save record.');
+      }
+    }
+
+    async function fetchMeasurements() {
+      try {
+        const res = await fetch('/api/measurements');
+        measurementHistory = await res.json();
+        renderMeasurementHistory();
+      } catch (err) {
+        console.error('Error fetching measurements:', err);
+      }
+    }
+
+    function renderMeasurementHistory() {
+      const list = document.getElementById('calc-history-list');
+      if (!list) return;
+      list.innerHTML = '';
+      let sumCost = 0;
+
+      if (measurementHistory.length === 0) {
+        list.innerHTML = '<li class="text-center py-6 text-xs text-slate-500">No saved measurements yet.</li>';
+      }
+
+      measurementHistory.forEach(item => {
+        sumCost += Number(item.totalCost);
+        const dateStr = new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border border-slate-800';
+        li.innerHTML = `
+          <div>
+            <p class="text-xs font-bold text-slate-200 leading-tight">${item.title}</p>
+            <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${item.totalQty} ${item.unit} @ ₹${item.rate} • ${dateStr}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-extrabold text-amber-400">₹${Number(item.totalCost).toLocaleString('en-IN')}</span>
+            <button onclick="deleteMeasurement('${item._id}')" class="text-xs text-rose-400 hover:text-rose-300">🗑️</button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+
+      document.getElementById('calc-history-total').innerText = 'Total: ₹' + sumCost.toLocaleString('en-IN');
+    }
+
+    async function deleteMeasurement(id) {
+      if (!confirm('Delete this measurement record?')) return;
+      const res = await fetch('/api/measurements/' + id, { method: 'DELETE' });
+      if (res.ok) fetchMeasurements();
     }
 
     initSession();

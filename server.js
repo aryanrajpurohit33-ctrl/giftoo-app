@@ -349,6 +349,41 @@ app.post('/api/admin/notify', async (req, res) => {
   }
 });
 
+
+app.get('/api/measurements', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const list = await Measurement.find({ userId: req.session.user.id }).sort({ date: -1 });
+    res.json(list);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch measurements' });
+  }
+});
+
+app.post('/api/measurements', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { title, calcType, details, totalQty, unit, rate, totalCost } = req.body;
+    const record = await Measurement.create({
+      userId: req.session.user.id,
+      title, calcType, details, totalQty, unit, rate, totalCost
+    });
+    res.json({ success: true, record });
+  } catch {
+    res.status(500).json({ error: 'Failed to save measurement' });
+  }
+});
+
+app.delete('/api/measurements/:id', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    await Measurement.deleteOne({ _id: req.params.id, userId: req.session.user.id });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: 'Failed to delete measurement' });
+  }
+});
+
 app.get('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
   try {
