@@ -57,7 +57,6 @@
 
     <div class="flex items-center gap-2">
       <div class="text-right">
-        
         <span id="user-badge" class="text-[10px] text-sky-400 font-bold block">User</span>
       </div>
       <button onclick="toggleSidebar()" class="w-9 h-9 bg-slate-800/80 border border-slate-700 text-white rounded-xl flex items-center justify-center text-base font-bold">⋮</button>
@@ -66,7 +65,7 @@
 
   <!-- ================= VIEW 1: HOME TAB ================= -->
   <main id="view-home" class="app-view space-y-3">
-    <!-- PUSH NOTIFICATION RECOMMENDATION BANNER -->
+    <!-- PUSH NOTIFICATION BANNER -->
     <div id="notification-banner" class="hidden bg-gradient-to-r from-sky-500/15 via-indigo-500/15 to-purple-500/15 border border-sky-500/30 p-3.5 rounded-2xl flex items-center justify-between gap-3 shadow-lg">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-sm">🔔</div>
@@ -79,6 +78,7 @@
         Enable ⚡
       </button>
     </div>
+
     <section class="grid grid-cols-3 gap-2">
       <div class="glass-card p-3 rounded-2xl flex flex-col justify-between">
         <span class="text-[9px] font-bold text-slate-400 uppercase">Total Balance</span>
@@ -94,9 +94,25 @@
       </div>
     </section>
 
-    <section id="user-logger-section" class="glass-card p-4 rounded-2xl space-y-3 hidden">
+    <!-- LOG NEW TRANSACTION FORM -->
+    <section id="user-logger-section" class="glass-card p-4 rounded-2xl space-y-3">
       <h2 class="text-sm font-extrabold text-slate-100 flex items-center gap-2">➕ Log New Transaction</h2>
       <form id="tx-form" onsubmit="addUserTransaction(event)" class="space-y-2.5">
+        
+        <!-- TARGET PROJECT / MAIN CATEGORY -->
+        <div>
+          <label class="text-[9px] font-extrabold text-sky-400 uppercase block mb-1">Target Project / Main Category</label>
+          <div class="flex gap-2">
+            <select id="tx-main-category" class="flex-1 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
+              <option value="Personal">Personal 👤</option>
+              <option value="Home Construction">Home Construction 🏠</option>
+            </select>
+            <button type="button" onclick="openMainCategoryModal()" class="bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs px-3 rounded-lg font-bold">
+              + New
+            </button>
+          </div>
+        </div>
+
         <input type="text" id="tx-title" placeholder="Description (Optional)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
         
         <div class="grid grid-cols-2 gap-2">
@@ -105,20 +121,6 @@
             <option value="expense">Expense 💸</option>
             <option value="income">Income 💰</option>
           </select>
-        </div>
-
-        <!-- Main Category Selector -->
-        <div>
-          <label class="text-[9px] font-extrabold text-sky-400 uppercase block mb-1">Target Project / Main Category</label>
-          <div class="flex gap-2">
-            <select id="tx-main-category" class="flex-1 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
-              <option value="Personal">Personal 👤</option>
-              <option value="Home Construction">Home Construction 🏠</option>
-            </select>
-            <button type="button" onclick="openMainCategoryModal()" class="bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs px-2.5 rounded-lg font-bold">
-              + New
-            </button>
-          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
@@ -131,6 +133,7 @@
             <option value="Other Expenses 📦">Other Expenses 📦</option>
           </select>
 
+          <!-- UNLIMITED DATE PICKER -->
           <input type="date" id="tx-date" required class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
         </div>
 
@@ -152,11 +155,7 @@
     </section>
   </main>
 
-  
-
-  <!-- ================= VIEW 3: ANALYTICS TAB ================= -->
-  
-  <!-- ================= VIEW: COMPANY EXPENSES TAB ================= -->
+  <!-- ================= VIEW 2: COMPANY TAB ================= -->
   <main id="view-company" class="app-view space-y-3 hidden">
     <section class="glass-card p-3 rounded-2xl flex justify-between items-center border-sky-500/20">
       <h1 class="text-xs font-extrabold text-sky-400 flex items-center gap-1.5">💼 Company Finances</h1>
@@ -217,6 +216,7 @@
     </section>
   </main>
 
+  <!-- ================= VIEW 3: ANALYTICS TAB ================= -->
   <main id="view-analytics" class="app-view space-y-3 hidden">
     <header class="glass-card p-3 rounded-2xl flex justify-between items-center">
       <h1 class="text-xs font-extrabold text-indigo-400">📊 Expense Analytics Overview</h1>
@@ -269,7 +269,6 @@
         </div>
       </div>
 
-      <!-- ANALYTICS CUSTOM DATE RANGE PICKER -->
       <div id="analytics-custom-date-container" class="grid grid-cols-2 gap-2 pt-1 hidden">
         <div>
           <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Start Date</label>
@@ -349,7 +348,7 @@
             </select>
           </div>
           <div>
-            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Date (Max -7 days)</label>
+            <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Date</label>
             <input type="date" id="assign-date" required class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
           </div>
         </div>
@@ -360,8 +359,6 @@
       </form>
     </section>
 
-    
-    
     <!-- COLLAPSIBLE CATEGORY MANAGEMENT DRAWER -->
     <details class="glass-card rounded-2xl overflow-hidden border border-slate-800 group">
       <summary class="p-4 flex items-center justify-between cursor-pointer select-none bg-slate-900/60 hover:bg-slate-900/80 transition">
@@ -372,7 +369,6 @@
       </summary>
 
       <div class="p-4 space-y-4 border-t border-slate-800/80 bg-slate-950/40">
-        <!-- Add Category Form -->
         <form onsubmit="createCategory(event)" class="space-y-2.5">
           <label class="text-[10px] font-extrabold text-slate-400 uppercase block">Add New Category</label>
           <div class="flex gap-2">
@@ -385,7 +381,6 @@
 
         <hr class="border-slate-800">
 
-        <!-- Remove Category List -->
         <div class="space-y-2">
           <label class="text-[10px] font-extrabold text-slate-400 uppercase block">Existing Categories</label>
           <ul id="admin-category-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></ul>
@@ -393,6 +388,31 @@
       </div>
     </details>
 
+    <section class="glass-card p-4 rounded-2xl space-y-3">
+      <h2 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider">📢 Send Custom Push Notification</h2>
+      <form onsubmit="sendCustomNotification(event)" class="space-y-3">
+        <div>
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Target Audience</label>
+          <select id="notify-user-select" required class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5 font-bold">
+            <option value="all">🌐 All Subscribed Users</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Notification Title</label>
+          <input type="text" id="notify-title" required placeholder="e.g. Reminder 📢" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5">
+        </div>
+
+        <div>
+          <label class="text-[10px] font-extrabold text-slate-400 uppercase block mb-1">Notification Message</label>
+          <textarea id="notify-message" required rows="2" placeholder="e.g. Please log your daily expenses." class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-xl p-2.5"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition duration-200">
+          Send Push Notification 🚀
+        </button>
+      </form>
+    </section>
 
     <section class="glass-card p-4 rounded-2xl space-y-3">
       <div class="flex justify-between items-center">
@@ -415,9 +435,6 @@
         <span class="text-[10px] font-bold text-sky-400">Home</span>
       </button>
 
-      
-
-      
       <button onclick="switchTab('company')" id="tab-company" class="hidden flex flex-col items-center gap-1 text-slate-400">
         <div class="nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
@@ -454,13 +471,13 @@
         <button onclick="toggleSidebar()" class="text-slate-400 font-bold text-base">✕</button>
       </div>
 
-      
       <div class="space-y-2.5 pb-2">
         <span class="text-[9px] font-extrabold text-sky-400 uppercase tracking-widest block">Notifications</span>
         <button onclick="subscribeUserToPush()" class="w-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2">
           <span>🔔</span> Enable Push Notifications
         </button>
       </div>
+
       <div id="admin-options" class="space-y-2.5">
         <span class="text-[9px] font-extrabold text-amber-400 uppercase tracking-widest block">Admin Operations</span>
         <button onclick="openCreateUserModal(); toggleSidebar();" class="w-full bg-slate-800 text-slate-200 border border-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center gap-2">
@@ -491,11 +508,26 @@
     </div>
   </div>
 
+  <!-- CREATE MAIN CATEGORY MODAL -->
+  <div id="main-cat-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card p-5 rounded-2xl w-full max-w-xs space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+        <h3 class="text-xs font-extrabold text-sky-400">Add Main Category / Project</h3>
+        <button onclick="closeMainCategoryModal()" class="text-slate-400 font-bold text-xs">✕</button>
+      </div>
+      <form onsubmit="createMainCategory(event)" class="space-y-2.5">
+        <input type="text" id="new-main-cat-name" required placeholder="e.g. Home Construction 🏠" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+        <button type="submit" class="w-full bg-sky-500 text-slate-950 font-extrabold py-2.5 rounded-lg text-xs">Save Category</button>
+      </form>
+    </div>
+  </div>
+
   <script>
     Chart.register(ChartDataLabels);
 
     let currentUser = null;
     let transactionsData = [];
+    let companyTransactions = [];
     let filteredAnalyticsTx = [];
     let categoryChartObj = null;
     let homeFeedLimit = 20;
@@ -510,11 +542,11 @@
 
     function switchTab(tabName) {
       document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
-      document.getElementById(`view-${tabName}`).classList.remove('hidden');
+      document.getElementById('view-' + tabName).classList.remove('hidden');
 
       const tabs = ['home', 'company', 'analytics', 'admin'];
       tabs.forEach(t => {
-        const btn = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById('tab-' + t);
         if (btn) {
           const pill = btn.querySelector('.nav-pill');
           const txt = btn.querySelector('span');
@@ -531,7 +563,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (tabName === 'analytics') applyAnalyticsFilters();
-      
       if (tabName === 'admin') fetchAdminUsers();
       if (tabName === 'company') fetchCompanyTransactions();
     }
@@ -550,17 +581,53 @@
       else catWrapper.style.display = 'block';
     }
 
+    function toggleCompanyCategoryOptions() {
+      const type = document.getElementById('company-tx-type').value;
+      const catSelect = document.getElementById('company-tx-category');
+      if (!catSelect) return;
+
+      if (type === 'income') {
+        catSelect.innerHTML = `
+          <option value="Razorpay Payment 💳">Razorpay Payment 💳</option>
+          <option value="Customer Payments 💰">Customer Payments 💰</option>
+          <option value="Other Revenue 📈">Other Revenue 📈</option>
+        `;
+      } else {
+        catSelect.innerHTML = `
+          <option value="Courier Charges 🚚">Courier Charges 🚚</option>
+          <option value="Supplier Payment 🏭">Supplier Payment 🏭</option>
+          <option value="Website Charges 🌐">Website Charges 🌐</option>
+          <option value="Marketing Charges 📢">Marketing Charges 📢</option>
+          <option value="Other Expenses 📦">Other Expenses 📦</option>
+        `;
+      }
+    }
+
     function setupDateLimits() {
       const todayStr = new Date().toISOString().split('T')[0];
       const d1 = document.getElementById('tx-date');
       const d2 = document.getElementById('assign-date');
-      if (d1) { d1.value = todayStr; d1.removeAttribute('max'); d1.removeAttribute('min'); }
-      if (d2) { d2.value = todayStr; d2.removeAttribute('max'); d2.removeAttribute('min'); }
-    }
+      const d3 = document.getElementById('company-tx-date');
+      if (d1 && !d1.value) { d1.value = todayStr; d1.removeAttribute('max'); d1.removeAttribute('min'); }
       if (d2 && !d2.value) { d2.value = todayStr; d2.removeAttribute('max'); d2.removeAttribute('min'); }
+      if (d3 && !d3.value) { d3.value = todayStr; d3.removeAttribute('max'); d3.removeAttribute('min'); }
     }
 
-    
+    function checkNotificationPermissionBanner() {
+      const banner = document.getElementById('notification-banner');
+      if (!banner) return;
+
+      if ('Notification' in window && Notification.permission === 'default') {
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    async function requestNotificationFromBanner() {
+      await subscribeUserToPush();
+      checkNotificationPermissionBanner();
+    }
 
     function toggleSidebar() {
       const s = document.getElementById('sidebar');
@@ -572,6 +639,46 @@
     function openCreateUserModal() { document.getElementById('user-modal').classList.remove('hidden'); }
     function closeCreateUserModal() { document.getElementById('user-modal').classList.add('hidden'); }
 
+    function openMainCategoryModal() { document.getElementById('main-cat-modal').classList.remove('hidden'); }
+    function closeMainCategoryModal() { document.getElementById('main-cat-modal').classList.add('hidden'); }
+
+    async function fetchMainCategories() {
+      try {
+        const res = await fetch('/api/main-categories');
+        const mainCats = await res.json();
+        const sel = document.getElementById('tx-main-category');
+        if (sel && Array.isArray(mainCats)) {
+          sel.innerHTML = '';
+          mainCats.forEach(mc => {
+            sel.appendChild(new Option(mc.name, mc.name));
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching main categories:', err);
+      }
+    }
+
+    async function createMainCategory(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-main-cat-name').value.trim();
+      if (!name) return;
+
+      const res = await fetch('/api/main-categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+
+      if (res.ok) {
+        document.getElementById('new-main-cat-name').value = '';
+        closeMainCategoryModal();
+        fetchMainCategories();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to add main category');
+      }
+    }
+
     async function initSession() {
       preventBackToLogin();
       try {
@@ -579,34 +686,32 @@
         if (!res.ok) return window.location.href = '/login';
         currentUser = await res.json();
 
-        document.getElementById('user-badge').innerText = `@${currentUser.username}`;
-        document.getElementById('sidebar-user-info').innerText = `@${currentUser.username} (${currentUser.role})`;
+        document.getElementById('user-badge').innerText = '@' + currentUser.username;
+        document.getElementById('sidebar-user-info').innerText = '@' + currentUser.username + ' (' + currentUser.role + ')';
 
         if (currentUser.role === 'admin') {
           document.getElementById('admin-options').style.display = 'block';
           document.getElementById('tab-analytics').classList.remove('hidden');
           document.getElementById('tab-admin').classList.remove('hidden');
-          document.getElementById('user-logger-section').classList.remove('hidden');
-
           fetchAdminUsers();
         } else {
           document.getElementById('admin-options').style.display = 'none';
-          document.getElementById('user-logger-section').classList.remove('hidden');
         }
-
-        toggleCategoryVisibility();
-        toggleAssignCategoryVisibility();
-        setupDateLimits();
-        document.getElementById('bottom-nav').classList.remove('hidden');
-        fetchTransactions();
-        fetchMainCategories();
 
         if (currentUser.username.toLowerCase() === 'nekoo' || currentUser.role === 'admin') {
           const cTab = document.getElementById('tab-company');
           if (cTab) cTab.classList.remove('hidden');
         }
 
+        toggleCategoryVisibility();
+        toggleAssignCategoryVisibility();
+        toggleCompanyCategoryOptions();
+        setupDateLimits();
+        document.getElementById('bottom-nav').classList.remove('hidden');
+        
+        fetchTransactions();
         fetchCategories();
+        fetchMainCategories();
         checkNotificationPermissionBanner();
       } catch {
         window.location.href = '/login';
@@ -620,12 +725,16 @@
 
       const sel1 = document.getElementById('analytics-user-filter');
       const sel2 = document.getElementById('admin-user-select');
+      const sel3 = document.getElementById('notify-user-select');
+
       sel1.innerHTML = '<option value="all">All Users</option>';
       sel2.innerHTML = '<option value="">-- Select Target User --</option>';
+      if (sel3) sel3.innerHTML = '<option value="all">🌐 All Subscribed Users</option>';
 
       usersList.forEach(u => {
-        sel1.appendChild(new Option(`@${u.username}`, u.id));
-        sel2.appendChild(new Option(`@${u.username} (${u.role})`, u.id));
+        sel1.appendChild(new Option('@' + u.username, u.id));
+        sel2.appendChild(new Option('@' + u.username + ' (' + u.role + ')', u.id));
+        if (sel3) sel3.appendChild(new Option('@' + u.username, u.id));
       });
 
       renderAdminUsersList();
@@ -636,7 +745,7 @@
       if (!list) return;
       list.innerHTML = '';
 
-      document.getElementById('admin-user-count').innerText = `${usersList.length} accounts`;
+      document.getElementById('admin-user-count').innerText = usersList.length + ' accounts';
 
       usersList.forEach(u => {
         const isSelf = u.id === currentUser.id || u.role === 'admin';
@@ -661,12 +770,9 @@
     }
 
     async function confirmDeleteUser(userId, username) {
-      const confirmed = confirm(`⚠️ WARNING:\nAre you sure you want to permanently delete user @${username}?\n\nThis will completely wipe their account AND delete all their transactions from cloud data.`);
-      if (!confirmed) return;
-
-      const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+      if (!confirm('Are you sure you want to delete user @' + username + '?')) return;
+      const res = await fetch('/api/admin/users/' + userId, { method: 'DELETE' });
       if (res.ok) {
-        alert(`User @${username} and all their transaction data have been deleted from cloud storage.`);
         fetchAdminUsers();
         fetchTransactions();
       } else {
@@ -674,11 +780,74 @@
       }
     }
 
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        const categories = await res.json();
+
+        const cat1 = document.getElementById('tx-category');
+        const cat2 = document.getElementById('assign-category');
+        const adminList = document.getElementById('admin-category-list');
+
+        if (cat1) cat1.innerHTML = '';
+        if (cat2) cat2.innerHTML = '';
+        if (adminList) adminList.innerHTML = '';
+
+        categories.forEach(c => {
+          if (cat1) cat1.appendChild(new Option(c.name, c.name));
+          if (cat2) cat2.appendChild(new Option(c.name, c.name));
+
+          if (adminList) {
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between p-2.5 bg-slate-900/90 rounded-xl border border-slate-800/80';
+            li.innerHTML = `
+              <span class="text-xs font-bold text-slate-200">${c.name}</span>
+              <button onclick="deleteCategory('${c._id}', '${c.name}')" class="text-[10px] font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-2.5 py-1 rounded-lg transition">
+                Remove 🗑️
+              </button>
+            `;
+            adminList.appendChild(li);
+          }
+        });
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    }
+
+    async function createCategory(e) {
+      e.preventDefault();
+      const input = document.getElementById('new-category-input');
+      const name = input.value.trim();
+      if (!name) return;
+
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+
+      if (res.ok) {
+        input.value = '';
+        fetchCategories();
+      } else {
+        alert('Failed to create category');
+      }
+    }
+
+    async function deleteCategory(id, name) {
+      if (!confirm('Delete category "' + name + '"?')) return;
+      const res = await fetch('/api/admin/categories/' + id, { method: 'DELETE' });
+      if (res.ok) {
+        fetchCategories();
+      } else {
+        alert('Failed to delete category');
+      }
+    }
+
     async function fetchTransactions() {
       const res = await fetch('/api/transactions?filter=all');
       transactionsData = await res.json();
       renderHomeUI();
-      applyHistoryFilters();
       if (currentUser.role === 'admin') applyAnalyticsFilters();
     }
 
@@ -692,7 +861,6 @@
       list.innerHTML = '';
       let inc = 0, exp = 0;
 
-      // Filter home feed strictly to current user's own transactions
       const myTransactions = transactionsData.filter(tx => String(tx.userId) === String(currentUser.id));
 
       myTransactions.forEach(tx => {
@@ -703,20 +871,21 @@
       const visibleTx = myTransactions.slice(0, homeFeedLimit);
 
       if (visibleTx.length === 0) {
-        list.innerHTML = `<li class="text-center py-6 text-xs text-slate-500">No transactions found.</li>`;
+        list.innerHTML = '<li class="text-center py-6 text-xs text-slate-500">No transactions found.</li>';
       }
 
       visibleTx.forEach(tx => {
         const isInc = tx.type === 'income';
         const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        const mainCatStr = tx.mainCategory || 'Personal';
         const li = document.createElement('li');
-        li.className = `flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border ${isInc ? 'border-emerald-500/30' : 'border-slate-800'}`;
+        li.className = 'flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border ' + (isInc ? 'border-emerald-500/30' : 'border-slate-800');
         li.innerHTML = `
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
             <div>
               <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
-              <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${tx.category} • ${dateStr}</p>
+              <p class="text-[10px] font-semibold text-slate-400 mt-0.5"><span class="text-sky-400 font-bold">${mainCatStr}</span> • ${tx.category} • ${dateStr}</p>
             </div>
           </div>
           <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
@@ -731,72 +900,48 @@
         seeMoreBtn.classList.add('hidden');
       }
 
-      document.getElementById('home-feed-count').innerText = `${visibleTx.length} of ${myTransactions.length}`;
-      document.getElementById('home-total-balance').innerText = `₹${(inc - exp).toLocaleString('en-IN')}`;
-      document.getElementById('home-total-income').innerText = `+₹${inc.toLocaleString('en-IN')}`;
-      document.getElementById('home-total-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;;
+      document.getElementById('home-feed-count').innerText = visibleTx.length + ' of ' + myTransactions.length;
+      document.getElementById('home-total-balance').innerText = '₹' + (inc - exp).toLocaleString('en-IN');
+      document.getElementById('home-total-income').innerText = '+₹' + inc.toLocaleString('en-IN');
+      document.getElementById('home-total-expense').innerText = '-₹' + exp.toLocaleString('en-IN');
     }
 
-    function applyHistoryFilters() {
-      const search = document.getElementById('history-search').value.toLowerCase().trim();
-      const type = document.getElementById('history-type').value;
-      const time = document.getElementById('history-time').value;
-      const customBox = document.getElementById('history-custom-date-container');
-
-      if (customBox) {
-        if (time === 'custom') customBox.classList.remove('hidden');
-        else customBox.classList.add('hidden');
+    async function fetchCompanyTransactions() {
+      try {
+        const res = await fetch('/api/company-transactions');
+        companyTransactions = await res.json();
+        renderCompanyUI();
+      } catch (err) {
+        console.error('Error fetching company transactions:', err);
       }
+    }
 
-      const filtered = transactionsData.filter(tx => {
-        const matchesSearch = (tx.title || '').toLowerCase().includes(search) || (tx.category || '').toLowerCase().includes(search);
-        const matchesType = type === 'all' || tx.type === type;
-        let matchesTime = true;
+    function renderCompanyUI() {
+      const list = document.getElementById('company-tx-list');
+      if (!list) return;
+      list.innerHTML = '';
+      let inc = 0, exp = 0;
 
-        if (time === 'custom') {
-          const startVal = document.getElementById('history-start-date').value;
-          const endVal = document.getElementById('history-end-date').value;
-          const txDate = new Date(tx.date);
-          if (startVal) {
-            const sDate = new Date(startVal);
-            sDate.setHours(0, 0, 0, 0);
-            if (txDate < sDate) matchesTime = false;
-          }
-          if (endVal) {
-            const eDate = new Date(endVal);
-            eDate.setHours(23, 59, 59, 999);
-            if (txDate > eDate) matchesTime = false;
-          }
-        } else if (time !== 'all') {
-          const now = new Date(); let cutoff = new Date();
-          if (time === '1w') cutoff.setDate(now.getDate() - 7);
-          else if (time === '1m') cutoff.setMonth(now.getMonth() - 1);
-          else if (time === '3m') cutoff.setMonth(now.getMonth() - 3);
-          matchesTime = new Date(tx.date) >= cutoff;
-        }
-        return matchesSearch && matchesType && matchesTime;
+      companyTransactions.forEach(tx => {
+        if (tx.type === 'income') inc += Number(tx.amount);
+        else exp += Number(tx.amount);
       });
 
-      const list = document.getElementById('history-tx-list');
-      list.innerHTML = '';
-      let net = 0;
-
-      if (filtered.length === 0) {
-        list.innerHTML = `<li class="text-center py-6 text-xs text-slate-500">No matching transactions found.</li>`;
+      if (companyTransactions.length === 0) {
+        list.innerHTML = '<li class="text-center py-6 text-xs text-slate-500">No company transactions logged yet.</li>';
       }
 
-      filtered.forEach(tx => {
+      companyTransactions.forEach(tx => {
         const isInc = tx.type === 'income';
-        if (isInc) net += Number(tx.amount); else net -= Number(tx.amount);
         const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
         const li = document.createElement('li');
-        li.className = `flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border ${isInc ? 'border-emerald-500/30' : 'border-slate-800'}`;
+        li.className = 'flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border ' + (isInc ? 'border-emerald-500/30' : 'border-slate-800');
         li.innerHTML = `
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
             <div>
               <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
-              <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${currentUser.role === 'admin' ? `@${tx.username} • ` : ''}${tx.category} • ${dateStr}</p>
+              <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${tx.category} • ${dateStr}</p>
             </div>
           </div>
           <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
@@ -804,137 +949,10 @@
         list.appendChild(li);
       });
 
-      document.getElementById('history-count').innerText = `${filtered.length} records`;
-      document.getElementById('history-total').innerText = `Total: ₹${net.toLocaleString('en-IN')}`;
-    }
-
-    function applyAnalyticsFilters() {
-      const search = document.getElementById('analytics-search').value.toLowerCase().trim();
-      const type = document.getElementById('analytics-type-filter').value;
-      const time = document.getElementById('analytics-time-filter').value;
-      const userSel = document.getElementById('analytics-user-filter').value;
-      const customBox = document.getElementById('analytics-custom-date-container');
-
-      if (customBox) {
-        if (time === 'custom') customBox.classList.remove('hidden');
-        else customBox.classList.add('hidden');
-      }
-
-      filteredAnalyticsTx = transactionsData.filter(tx => {
-        const matchesSearch = (tx.title || '').toLowerCase().includes(search) || (tx.category || '').toLowerCase().includes(search) || (tx.username || '').toLowerCase().includes(search);
-        const matchesType = type === 'all' || tx.type === type;
-        const matchesUser = userSel === 'all' || tx.userId === userSel;
-        let matchesTime = true;
-
-        if (time === 'custom') {
-          const startVal = document.getElementById('analytics-start-date').value;
-          const endVal = document.getElementById('analytics-end-date').value;
-          const txDate = new Date(tx.date);
-          if (startVal) {
-            const sDate = new Date(startVal);
-            sDate.setHours(0, 0, 0, 0);
-            if (txDate < sDate) matchesTime = false;
-          }
-          if (endVal) {
-            const eDate = new Date(endVal);
-            eDate.setHours(23, 59, 59, 999);
-            if (txDate > eDate) matchesTime = false;
-          }
-        } else if (time !== 'all') {
-          const now = new Date(); let cutoff = new Date();
-          if (time === '1w') cutoff.setDate(now.getDate() - 7);
-          else if (time === '1m') cutoff.setMonth(now.getMonth() - 1);
-          else if (time === '3m') cutoff.setMonth(now.getMonth() - 3);
-          matchesTime = new Date(tx.date) >= cutoff;
-        }
-        return matchesSearch && matchesType && matchesUser && matchesTime;
-      });
-
-      let inc = 0, exp = 0;
-      filteredAnalyticsTx.forEach(t => { if (t.type === 'income') inc += Number(t.amount); else exp += Number(t.amount); });
-
-      document.getElementById('analytics-income').innerText = `+₹${inc.toLocaleString('en-IN')}`;
-      document.getElementById('analytics-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;
-      document.getElementById('analytics-balance').innerText = `₹${(inc - exp).toLocaleString('en-IN')}`;
-
-      renderCategoryChart();
-      renderAnalyticsList();
-    }
-
-    function renderCategoryChart() {
-      const expenses = filteredAnalyticsTx.filter(t => t.type === 'expense');
-      const categoryTotals = {};
-      let totalExpenseSum = 0;
-
-      expenses.forEach(t => {
-        const cat = t.category.split(' ')[0];
-        const amt = Number(t.amount);
-        categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
-        totalExpenseSum += amt;
-      });
-
-      const catLabels = Object.keys(categoryTotals).map(c => {
-        const pct = totalExpenseSum > 0 ? Math.round((categoryTotals[c] / totalExpenseSum) * 100) : 0;
-        return `${c} (${pct}%)`;
-      });
-
-      const catCtx = document.getElementById('categoryChart').getContext('2d');
-      if (categoryChartObj) categoryChartObj.destroy();
-
-      categoryChartObj = new Chart(catCtx, {
-        type: 'pie',
-        data: {
-          labels: catLabels.length > 0 ? catLabels : ['No Expenses'],
-          datasets: [{
-            data: Object.values(categoryTotals).length > 0 ? Object.values(categoryTotals) : [1],
-            backgroundColor: ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#f8fafc', font: { size: 9, weight: 'bold' } } },
-            datalabels: {
-              color: '#ffffff',
-              font: { weight: '800', size: 10 },
-              formatter: (val) => totalExpenseSum > 0 ? `${Math.round((val / totalExpenseSum) * 100)}%` : ''
-            }
-          }
-        }
-      });
-    }
-
-    function renderAnalyticsList() {
-      const list = document.getElementById('analytics-tx-list');
-      list.innerHTML = '';
-      let netTotal = 0;
-
-      if (filteredAnalyticsTx.length === 0) {
-        list.innerHTML = `<li class="text-center py-6 text-xs text-slate-500">No matching transactions found.</li>`;
-      }
-
-      filteredAnalyticsTx.forEach(tx => {
-        const isInc = tx.type === 'income';
-        if (isInc) netTotal += Number(tx.amount); else netTotal -= Number(tx.amount);
-        const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-        const li = document.createElement('li');
-        li.className = `flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border ${isInc ? 'border-emerald-500/30' : 'border-slate-800'}`;
-        li.innerHTML = `
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
-            <div>
-              <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
-              <p class="text-[10px] font-semibold text-slate-400 mt-0.5"><span class="text-amber-400 font-bold">@${tx.username}</span> • ${tx.category} • ${dateStr}</p>
-            </div>
-          </div>
-          <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
-        `;
-        list.appendChild(li);
-      });
-
-      document.getElementById('analytics-record-count').innerText = `${filteredAnalyticsTx.length} records`;
-      document.getElementById('analytics-filtered-total').innerText = `Net Total: ₹${netTotal.toLocaleString('en-IN')}`;
+      document.getElementById('company-tx-count').innerText = companyTransactions.length + ' records';
+      document.getElementById('company-total-balance').innerText = '₹' + (inc - exp).toLocaleString('en-IN');
+      document.getElementById('company-total-income').innerText = '+₹' + inc.toLocaleString('en-IN');
+      document.getElementById('company-total-expense').innerText = '-₹' + exp.toLocaleString('en-IN');
     }
 
     async function addUserTransaction(e) {
@@ -944,11 +962,12 @@
       const type = document.getElementById('tx-type').value;
       const category = type === 'income' ? 'Income 💰' : document.getElementById('tx-category').value;
       const date = document.getElementById('tx-date').value;
+      const mainCategory = document.getElementById('tx-main-category')?.value || 'Personal';
 
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, amount, type, category, date, mainCategory: document.getElementById('tx-main-category')?.value || 'Personal' })
+        body: JSON.stringify({ title, amount, type, category, date, mainCategory })
       });
 
       if (res.ok) {
@@ -956,6 +975,27 @@
         document.getElementById('tx-amount').value = '';
         setupDateLimits();
         fetchTransactions();
+      }
+    }
+
+    async function addCompanyTransaction(e) {
+      e.preventDefault();
+      const title = document.getElementById('company-tx-title').value.trim();
+      const amount = document.getElementById('company-tx-amount').value;
+      const type = document.getElementById('company-tx-type').value;
+      const category = document.getElementById('company-tx-category').value;
+      const date = document.getElementById('company-tx-date').value;
+
+      const res = await fetch('/api/company-transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, amount, type, category, date })
+      });
+
+      if (res.ok) {
+        document.getElementById('company-tx-title').value = '';
+        document.getElementById('company-tx-amount').value = '';
+        fetchCompanyTransactions();
       }
     }
 
@@ -988,6 +1028,28 @@
       }
     }
 
+    async function sendCustomNotification(e) {
+      e.preventDefault();
+      const targetUserId = document.getElementById('notify-user-select').value;
+      const title = document.getElementById('notify-title').value.trim();
+      const message = document.getElementById('notify-message').value.trim();
+
+      const res = await fetch('/api/admin/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId, title, message })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert('✅ Push notification sent to ' + data.count + ' subscriber(s)!');
+        document.getElementById('notify-title').value = '';
+        document.getElementById('notify-message').value = '';
+      } else {
+        alert(data.error || 'Failed to send notification');
+      }
+    }
+
     async function createNewUser(e) {
       e.preventDefault();
       const username = document.getElementById('new-username').value.trim();
@@ -1011,66 +1073,6 @@
       }
     }
 
-    function exportAnalyticsPDF() {
-      if (filteredAnalyticsTx.length === 0) return alert('No transactions available to export.');
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('p', 'mm', 'a4');
-
-      let inc = 0, exp = 0;
-      filteredAnalyticsTx.forEach(t => { if (t.type === 'income') inc += Number(t.amount); else exp += Number(t.amount); });
-      const net = inc - exp;
-      const cleanStr = (s) => String(s || '').replace(/[^\x00-\x7F]/g, "").trim();
-
-      doc.setFillColor(11, 15, 23); doc.rect(0, 0, 210, 36, 'F');
-      doc.setFillColor(66, 199, 187); doc.rect(14, 10, 4, 16, 'F');
-
-      doc.setTextColor(66, 199, 187); doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
-      doc.text("giftoo", 22, 18);
-
-      doc.setTextColor(248, 250, 252); doc.setFontSize(11);
-      doc.text("Financial Analytics Statement", 22, 24);
-
-      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(148, 163, 184);
-      doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 155, 22);
-
-      const cardY = 42, cardWidth = 56, cardHeight = 22;
-
-      doc.setFillColor(30, 41, 59); doc.setDrawColor(16, 185, 129); doc.setLineWidth(0.4);
-      doc.roundedRect(14, cardY, cardWidth, cardHeight, 3, 3, 'FD');
-      doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
-      doc.text("TOTAL INCOME", 19, cardY + 7);
-      doc.setFontSize(12); doc.setTextColor(248, 250, 252);
-      doc.text(`+ Rs. ${inc.toLocaleString('en-IN')}`, 19, cardY + 16);
-
-      doc.setFillColor(30, 41, 59); doc.setDrawColor(239, 68, 68);
-      doc.roundedRect(77, cardY, cardWidth, cardHeight, 3, 3, 'FD');
-      doc.setFontSize(7.5); doc.setTextColor(239, 68, 68);
-      doc.text("TOTAL EXPENSES", 82, cardY + 7);
-      doc.setFontSize(12); doc.setTextColor(248, 250, 252);
-      doc.text(`- Rs. ${exp.toLocaleString('en-IN')}`, 82, cardY + 16);
-
-      doc.setFillColor(30, 41, 59); doc.setDrawColor(56, 189, 248);
-      doc.roundedRect(140, cardY, cardWidth, cardHeight, 3, 3, 'FD');
-      doc.setFontSize(7.5); doc.setTextColor(56, 189, 248);
-      doc.text("NET BALANCE", 145, cardY + 7);
-      doc.setFontSize(12); doc.setTextColor(248, 250, 252);
-      doc.text(`Rs. ${net.toLocaleString('en-IN')}`, 145, cardY + 16);
-
-      const tableRows = filteredAnalyticsTx.map((tx, i) => [
-        i + 1, cleanStr(tx.username), new Date(tx.date).toLocaleDateString('en-IN'), cleanStr(tx.title), cleanStr(tx.category), tx.type.toUpperCase(), `Rs. ${Number(tx.amount).toLocaleString('en-IN')}`
-      ]);
-
-      doc.autoTable({
-        startY: 70, head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']], body: tableRows, theme: 'striped',
-        headStyles: { fillColor: [15, 23, 42], textColor: [56, 189, 248], fontStyle: 'bold', fontSize: 9, cellPadding: 4 },
-        bodyStyles: { fontSize: 8.5, textColor: [30, 41, 59], cellPadding: 3.5 },
-        alternateRowStyles: { fillColor: [248, 250, 252] }
-      });
-
-      doc.save(`Giftoo_Detailed_Analytics.pdf`);
-    }
-
-    
     async function subscribeUserToPush() {
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         return alert('Push notifications are not supported on this browser/device.');
@@ -1118,129 +1120,124 @@
       return outputArray;
     }
 
-    
-    function checkNotificationPermissionBanner() {
-      const banner = document.getElementById('notification-banner');
-      if (!banner) return;
+    function applyAnalyticsFilters() {
+      const search = document.getElementById('analytics-search').value.toLowerCase().trim();
+      const type = document.getElementById('analytics-type-filter').value;
+      const time = document.getElementById('analytics-time-filter').value;
+      const userSel = document.getElementById('analytics-user-filter').value;
+      const customBox = document.getElementById('analytics-custom-date-container');
 
-      if ('Notification' in window && Notification.permission === 'default') {
-        banner.classList.remove('hidden');
-      } else {
-        banner.classList.add('hidden');
+      if (customBox) {
+        if (time === 'custom') customBox.classList.remove('hidden');
+        else customBox.classList.add('hidden');
       }
-    }
 
-    async function requestNotificationFromBanner() {
-      await subscribeUserToPush();
-      checkNotificationPermissionBanner();
-    }
+      filteredAnalyticsTx = transactionsData.filter(tx => {
+        const matchesSearch = (tx.title || '').toLowerCase().includes(search) || (tx.category || '').toLowerCase().includes(search) || (tx.username || '').toLowerCase().includes(search);
+        const matchesType = type === 'all' || tx.type === type;
+        const matchesUser = userSel === 'all' || tx.userId === userSel;
+        let matchesTime = true;
 
-    
-    async function fetchCategories() {
-      try {
-        const res = await fetch('/api/categories');
-        const categories = await res.json();
-
-        const cat1 = document.getElementById('tx-category');
-        const cat2 = document.getElementById('assign-category');
-        const adminList = document.getElementById('admin-category-list');
-
-        if (cat1) cat1.innerHTML = '';
-        if (cat2) cat2.innerHTML = '';
-        if (adminList) adminList.innerHTML = '';
-
-        categories.forEach(c => {
-          if (cat1) cat1.appendChild(new Option(c.name, c.name));
-          if (cat2) cat2.appendChild(new Option(c.name, c.name));
-
-          if (adminList) {
-            const li = document.createElement('li');
-            li.className = 'flex items-center justify-between p-2.5 bg-slate-900/90 rounded-xl border border-slate-800/80';
-            li.innerHTML = `
-              <span class="text-xs font-bold text-slate-200">${c.name}</span>
-              <button onclick="deleteCategory('${c._id}', '${c.name}')" class="text-[10px] font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-2.5 py-1 rounded-lg transition">
-                Remove 🗑️
-              </button>
-            `;
-            adminList.appendChild(li);
+        if (time === 'custom') {
+          const startVal = document.getElementById('analytics-start-date').value;
+          const endVal = document.getElementById('analytics-end-date').value;
+          const txDate = new Date(tx.date);
+          if (startVal) {
+            const sDate = new Date(startVal);
+            sDate.setHours(0, 0, 0, 0);
+            if (txDate < sDate) matchesTime = false;
           }
-        });
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      }
-    }
-
-    async function deleteCategory(id, name) {
-      if (!confirm(`Delete category "${name}"?`)) return;
-      const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        fetchCategories();
-      } else {
-        alert('Failed to delete category');
-      }
-    }
-
-    async function createCategory(e) {
-      e.preventDefault();
-      const input = document.getElementById('new-category-input');
-      const name = input.value.trim();
-      if (!name) return;
-
-      const res = await fetch('/api/admin/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
+          if (endVal) {
+            const eDate = new Date(endVal);
+            eDate.setHours(23, 59, 59, 999);
+            if (txDate > eDate) matchesTime = false;
+          }
+        } else if (time !== 'all') {
+          const now = new Date(); let cutoff = new Date();
+          if (time === '1w') cutoff.setDate(now.getDate() - 7);
+          else if (time === '1m') cutoff.setMonth(now.getMonth() - 1);
+          else if (time === '3m') cutoff.setMonth(now.getMonth() - 3);
+          matchesTime = new Date(tx.date) >= cutoff;
+        }
+        return matchesSearch && matchesType && matchesUser && matchesTime;
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        alert('✅ New category added successfully!');
-        input.value = '';
-        fetchCategories();
-      } else {
-        alert(data.error || 'Failed to create category');
-      }
-    }
-
-    
-    let companyTransactions = [];
-
-    async function fetchCompanyTransactions() {
-      try {
-        const res = await fetch('/api/company-transactions');
-        companyTransactions = await res.json();
-        renderCompanyUI();
-      } catch (err) {
-        console.error('Error fetching company transactions:', err);
-      }
-    }
-
-    function renderCompanyUI() {
-      const list = document.getElementById('company-tx-list');
-      if (!list) return;
-      list.innerHTML = '';
       let inc = 0, exp = 0;
+      filteredAnalyticsTx.forEach(t => { if (t.type === 'income') inc += Number(t.amount); else exp += Number(t.amount); });
 
-      companyTransactions.forEach(tx => {
-        if (tx.type === 'income') inc += Number(tx.amount);
-        else exp += Number(tx.amount);
+      document.getElementById('analytics-income').innerText = '+₹' + inc.toLocaleString('en-IN');
+      document.getElementById('analytics-expense').innerText = '-₹' + exp.toLocaleString('en-IN');
+      document.getElementById('analytics-balance').innerText = '₹' + (inc - exp).toLocaleString('en-IN');
+
+      renderCategoryChart();
+      renderAnalyticsList();
+    }
+
+    function renderCategoryChart() {
+      const expenses = filteredAnalyticsTx.filter(t => t.type === 'expense');
+      const categoryTotals = {};
+      let totalExpenseSum = 0;
+
+      expenses.forEach(t => {
+        const cat = t.category.split(' ')[0];
+        const amt = Number(t.amount);
+        categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
+        totalExpenseSum += amt;
       });
 
-      if (companyTransactions.length === 0) {
-        list.innerHTML = `<li class="text-center py-6 text-xs text-slate-500">No company transactions logged yet.</li>`;
+      const catLabels = Object.keys(categoryTotals).map(c => {
+        const pct = totalExpenseSum > 0 ? Math.round((categoryTotals[c] / totalExpenseSum) * 100) : 0;
+        return c + ' (' + pct + '%)';
+      });
+
+      const catCtx = document.getElementById('categoryChart').getContext('2d');
+      if (categoryChartObj) categoryChartObj.destroy();
+
+      categoryChartObj = new Chart(catCtx, {
+        type: 'pie',
+        data: {
+          labels: catLabels.length > 0 ? catLabels : ['No Expenses'],
+          datasets: [{
+            data: Object.values(categoryTotals).length > 0 ? Object.values(categoryTotals) : [1],
+            backgroundColor: ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#f8fafc', font: { size: 9, weight: 'bold' } } },
+            datalabels: {
+              color: '#ffffff',
+              font: { weight: '800', size: 10 },
+              formatter: (val) => totalExpenseSum > 0 ? Math.round((val / totalExpenseSum) * 100) + '%' : ''
+            }
+          }
+        }
+      });
+    }
+
+    function renderAnalyticsList() {
+      const list = document.getElementById('analytics-tx-list');
+      list.innerHTML = '';
+      let netTotal = 0;
+
+      if (filteredAnalyticsTx.length === 0) {
+        list.innerHTML = '<li class="text-center py-6 text-xs text-slate-500">No matching transactions found.</li>';
       }
 
-      companyTransactions.forEach(tx => {
+      filteredAnalyticsTx.forEach(tx => {
         const isInc = tx.type === 'income';
+        if (isInc) netTotal += Number(tx.amount); else netTotal -= Number(tx.amount);
         const dateStr = new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
         const li = document.createElement('li');
-        li.className = `flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border ${isInc ? 'border-emerald-500/30' : 'border-slate-800'}`;
+        li.className = 'flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border ' + (isInc ? 'border-emerald-500/30' : 'border-slate-800');
         li.innerHTML = `
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
+            <div class="w-8 h-8 rounded-lg ${isInc ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center font-bold text-xs">${isInc ? '⇣' : '⇡'}</div>
             <div>
               <p class="text-xs font-bold text-slate-200 leading-tight">${tx.title}</p>
-              <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${tx.category} • ${dateStr}</p>
+              <p class="text-[10px] font-semibold text-slate-400 mt-0.5"><span class="text-amber-400 font-bold">@${tx.username}</span> • ${tx.category} • ${dateStr}</p>
             </div>
           </div>
           <span class="text-xs font-extrabold ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}₹${Number(tx.amount).toLocaleString('en-IN')}</span>
@@ -1248,98 +1245,70 @@
         list.appendChild(li);
       });
 
-      document.getElementById('company-tx-count').innerText = `${companyTransactions.length} records`;
-      document.getElementById('company-total-balance').innerText = `₹${(inc - exp).toLocaleString('en-IN')}`;
-      document.getElementById('company-total-income').innerText = `+₹${inc.toLocaleString('en-IN')}`;
-      document.getElementById('company-total-expense').innerText = `-₹${exp.toLocaleString('en-IN')}`;
-      
-      const cDate = document.getElementById('company-tx-date');
-      if (cDate && !cDate.value) cDate.value = new Date().toISOString().split('T')[0];
+      document.getElementById('analytics-record-count').innerText = filteredAnalyticsTx.length + ' records';
+      document.getElementById('analytics-filtered-total').innerText = 'Net Total: ₹' + netTotal.toLocaleString('en-IN');
     }
 
-    async function addCompanyTransaction(e) {
-      e.preventDefault();
-      const title = document.getElementById('company-tx-title').value.trim();
-      const amount = document.getElementById('company-tx-amount').value;
-      const type = document.getElementById('company-tx-type').value;
-      const category = document.getElementById('company-tx-category').value;
-      const date = document.getElementById('company-tx-date').value;
+    function exportAnalyticsPDF() {
+      if (filteredAnalyticsTx.length === 0) return alert('No transactions available to export.');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
 
-      const res = await fetch('/api/company-transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, amount, type, category, date, mainCategory: document.getElementById('tx-main-category')?.value || 'Personal' })
+      let inc = 0, exp = 0;
+      filteredAnalyticsTx.forEach(t => { if (t.type === 'income') inc += Number(t.amount); else exp += Number(t.amount); });
+      const net = inc - exp;
+      const cleanStr = (s) => String(s || '').replace(/[^\x00-\x7F]/g, "").trim();
+
+      doc.setFillColor(11, 15, 23); doc.rect(0, 0, 210, 36, 'F');
+      doc.setFillColor(66, 199, 187); doc.rect(14, 10, 4, 16, 'F');
+
+      doc.setTextColor(66, 199, 187); doc.setFont('helvetica', 'bold'); doc.setFontSize(20);
+      doc.text("giftoo", 22, 18);
+
+      doc.setTextColor(248, 250, 252); doc.setFontSize(11);
+      doc.text("Financial Analytics Statement", 22, 24);
+
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(148, 163, 184);
+      doc.text("Generated: " + new Date().toLocaleDateString('en-IN'), 155, 22);
+
+      const cardY = 42, cardWidth = 56, cardHeight = 22;
+
+      doc.setFillColor(30, 41, 59); doc.setDrawColor(16, 185, 129); doc.setLineWidth(0.4);
+      doc.roundedRect(14, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(16, 185, 129);
+      doc.text("TOTAL INCOME", 19, cardY + 7);
+      doc.setFontSize(12); doc.setTextColor(248, 250, 252);
+      doc.text("+ Rs. " + inc.toLocaleString('en-IN'), 19, cardY + 16);
+
+      doc.setFillColor(30, 41, 59); doc.setDrawColor(239, 68, 68);
+      doc.roundedRect(77, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc.setFontSize(7.5); doc.setTextColor(239, 68, 68);
+      doc.text("TOTAL EXPENSES", 82, cardY + 7);
+      doc.setFontSize(12); doc.setTextColor(248, 250, 252);
+      doc.text("- Rs. " + exp.toLocaleString('en-IN'), 82, cardY + 16);
+
+      doc.setFillColor(30, 41, 59); doc.setDrawColor(56, 189, 248);
+      doc.roundedRect(140, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+      doc.setFontSize(7.5); doc.setTextColor(56, 189, 248);
+      doc.text("NET BALANCE", 145, cardY + 7);
+      doc.setFontSize(12); doc.setTextColor(248, 250, 252);
+      doc.text("Rs. " + net.toLocaleString('en-IN'), 145, cardY + 16);
+
+      const tableRows = filteredAnalyticsTx.map((tx, i) => [
+        i + 1, cleanStr(tx.username), new Date(tx.date).toLocaleDateString('en-IN'), cleanStr(tx.title), cleanStr(tx.category), tx.type.toUpperCase(), "Rs. " + Number(tx.amount).toLocaleString('en-IN')
+      ]);
+
+      doc.autoTable({
+        startY: 70, head: [['#', 'User', 'Date', 'Description', 'Category', 'Type', 'Amount']], body: tableRows, theme: 'striped',
+        headStyles: { fillColor: [15, 23, 42], textColor: [56, 189, 248], fontStyle: 'bold', fontSize: 9, cellPadding: 4 },
+        bodyStyles: { fontSize: 8.5, textColor: [30, 41, 59], cellPadding: 3.5 },
+        alternateRowStyles: { fillColor: [248, 250, 252] }
       });
 
-      if (res.ok) {
-        document.getElementById('company-tx-title').value = '';
-        document.getElementById('company-tx-amount').value = '';
-        fetchCompanyTransactions();
-      }
-    }
-
-    
-    async function fetchMainCategories() {
-      try {
-        const res = await fetch('/api/main-categories');
-        const mainCats = await res.json();
-        const sel = document.getElementById('tx-main-category');
-        if (sel) {
-          sel.innerHTML = '';
-          mainCats.forEach(mc => {
-            sel.appendChild(new Option(mc.name, mc.name));
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching main categories:', err);
-      }
-    }
-
-    function openMainCategoryModal() {
-      document.getElementById('main-cat-modal').classList.remove('hidden');
-    }
-
-    function closeMainCategoryModal() {
-      document.getElementById('main-cat-modal').classList.add('hidden');
-    }
-
-    async function createMainCategory(e) {
-      e.preventDefault();
-      const name = document.getElementById('new-main-cat-name').value.trim();
-      if (!name) return;
-
-      const res = await fetch('/api/main-categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-
-      if (res.ok) {
-        document.getElementById('new-main-cat-name').value = '';
-        closeMainCategoryModal();
-        fetchMainCategories();
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to add main category');
-      }
+      doc.save('Giftoo_Detailed_Analytics.pdf');
     }
 
     initSession();
   </script>
-
-  <!-- CREATE MAIN CATEGORY MODAL -->
-  <div id="main-cat-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card p-5 rounded-2xl w-full max-w-xs space-y-3">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
-        <h3 class="text-xs font-extrabold text-sky-400">Add Main Category / Project</h3>
-        <button onclick="closeMainCategoryModal()" class="text-slate-400 font-bold text-xs">✕</button>
-      </div>
-      <form onsubmit="createMainCategory(event)" class="space-y-2.5">
-        <input type="text" id="new-main-cat-name" required placeholder="e.g. Home Construction 🏠" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
-        <button type="submit" class="w-full bg-sky-500 text-slate-950 font-extrabold py-2.5 rounded-lg text-xs">Save Category</button>
-      </form>
-    </div>
-  </div>
-
 </body>
 </html>
