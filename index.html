@@ -109,9 +109,7 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-          <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
-            <option value="Rikshaw 🛺">Rikshaw 🛺</option>
-          </select>
+          <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold"></select>
 
           <!-- UNLIMITED DATE PICKER -->
           <input type="date" id="tx-date" required class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
@@ -135,13 +133,11 @@
     </section>
   </main>
 
-  <!-- ================= VIEW 2: COMPANY TAB ================= -->
-  
   <!-- ================= VIEW: MEASUREMENT CALCULATOR ================= -->
   <main id="view-calc" class="app-view space-y-3 hidden">
     <section class="glass-card p-3.5 rounded-2xl flex justify-between items-center border-amber-500/30">
       <h1 class="text-xs font-extrabold text-amber-400 flex items-center gap-1.5">📐 Construction & Mistri Calculator</h1>
-      <span class="text-[10px] font-bold text-slate-400">Feet / Sq.Ft / RFT</span>
+      <span class="text-[10px] font-bold text-slate-400">Feet / Sq.Ft / RFT / Bricks</span>
     </section>
 
     <!-- Calculator Selector Card -->
@@ -162,7 +158,7 @@
       <!-- Rate & Cost Summary -->
       <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
         <div>
-          <label class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Mistri Rate (₹)</label>
+          <label id="calc-rate-label" class="text-[9px] font-extrabold text-slate-400 uppercase block mb-0.5">Mistri Rate (₹)</label>
           <input type="number" id="calc-rate" oninput="calculateCost()" placeholder="e.g. 35" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
         </div>
         <div>
@@ -192,6 +188,7 @@
     </section>
   </main>
 
+  <!-- ================= VIEW 2: COMPANY TAB ================= -->
   <main id="view-company" class="app-view space-y-3 hidden">
     <section class="glass-card p-3 rounded-2xl flex justify-between items-center border-sky-500/20">
       <h1 class="text-xs font-extrabold text-sky-400 flex items-center gap-1.5">💼 Company Finances</h1>
@@ -435,7 +432,6 @@
         <span class="text-[10px] font-bold text-sky-400">Home</span>
       </button>
 
-      
       <button onclick="switchTab('calc')" id="tab-calc" class="flex flex-col items-center gap-1 text-slate-400">
         <div class="nav-pill px-4 py-1 rounded-full flex items-center justify-center transition-all">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
@@ -534,6 +530,7 @@
     let currentUser = null;
     let transactionsData = [];
     let companyTransactions = [];
+    let measurementHistory = [];
     let filteredAnalyticsTx = [];
     let categoryChartObj = null;
     let homeFeedLimit = 20;
@@ -923,6 +920,303 @@
       document.getElementById('company-total-expense').innerText = '-₹' + exp.toLocaleString('en-IN');
     }
 
+    function renderCalcInputs() {
+      const mode = document.getElementById('calc-mode').value;
+      const container = document.getElementById('calc-input-container');
+      const rateLabel = document.getElementById('calc-rate-label');
+      if (!container) return;
+
+      if (rateLabel) {
+        rateLabel.innerText = mode === 'brickwork' ? 'Rate (₹ per 1,000 Bricks)' : 'Mistri Rate (₹)';
+      }
+
+      if (mode === 'sqft') {
+        container.innerHTML = `
+          <input type="text" id="calc-title" placeholder="Area Name (e.g. Living Room Floor)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Length (Feet)</label>
+              <input type="number" id="calc-l1" oninput="calculateCost()" placeholder="e.g. 20" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Width (Feet)</label>
+              <input type="number" id="calc-w1" oninput="calculateCost()" placeholder="e.g. 15" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            </div>
+          </div>
+        `;
+      } else if (mode === 'rft') {
+        container.innerHTML = `
+          <input type="text" id="calc-title" placeholder="Area Name (e.g. Boundary Wall / Skirting)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
+          <div>
+            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Total Length (Running Feet)</label>
+            <input type="number" id="calc-rft-len" oninput="calculateCost()" placeholder="e.g. 120" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+          </div>
+        `;
+      } else if (mode === 'l_shape') {
+        container.innerHTML = `
+          <input type="text" id="calc-title" placeholder="Area Name (e.g. L-Shaped Roof)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
+          <span class="text-[9px] font-extrabold text-sky-400 uppercase block">Part 1 (Section A)</span>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="number" id="calc-l1" oninput="calculateCost()" placeholder="Length A (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            <input type="number" id="calc-w1" oninput="calculateCost()" placeholder="Width A (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+          </div>
+          <span class="text-[9px] font-extrabold text-sky-400 uppercase block pt-1">Part 2 (Section B)</span>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="number" id="calc-l2" oninput="calculateCost()" placeholder="Length B (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            <input type="number" id="calc-w2" oninput="calculateCost()" placeholder="Width B (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+          </div>
+        `;
+      } else if (mode === 'tank') {
+        container.innerHTML = `
+          <input type="text" id="calc-title" placeholder="Tank Name (e.g. Underground Water Tank)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Length (ft)</label>
+              <input type="number" id="calc-tl" oninput="calculateCost()" placeholder="10" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold w-full">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Width (ft)</label>
+              <input type="number" id="calc-tw" oninput="calculateCost()" placeholder="8" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold w-full">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Depth (ft)</label>
+              <input type="number" id="calc-td" oninput="calculateCost()" placeholder="6" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold w-full">
+            </div>
+          </div>
+          <div id="tank-capacity-info" class="text-[10px] font-bold text-emerald-400 pt-1">Water Capacity: 0 Liters</div>
+        `;
+      } else if (mode === 'brickwork') {
+        container.innerHTML = `
+          <input type="text" id="calc-title" placeholder="Wall Section Name (e.g. Boundary Wall)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Wall Length (ft)</label>
+              <input type="number" id="brick-l" oninput="calculateCost()" placeholder="e.g. 30" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Wall Height (ft)</label>
+              <input type="number" id="brick-h" oninput="calculateCost()" placeholder="e.g. 10" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+            </div>
+          </div>
+          <div>
+            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Wall Type / Thickness</label>
+            <select id="brick-type" onchange="calculateCost()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
+              <option value="10">9-inch Wall (Full Wall — ~10 Bricks/sq ft)</option>
+              <option value="5">4.5-inch Wall (Half Wall — ~5 Bricks/sq ft)</option>
+            </select>
+          </div>
+          <div id="brick-count-info" class="text-[10px] font-bold text-amber-400 pt-1">Total Estimated Bricks: 0 Bricks</div>
+        `;
+      }
+      calculateCost();
+    }
+
+    function calculateCost() {
+      const mode = document.getElementById('calc-mode').value;
+      const rate = parseFloat(document.getElementById('calc-rate')?.value) || 0;
+      let totalQty = 0;
+
+      if (mode === 'sqft') {
+        const l = parseFloat(document.getElementById('calc-l1')?.value) || 0;
+        const w = parseFloat(document.getElementById('calc-w1')?.value) || 0;
+        totalQty = l * w;
+      } else if (mode === 'rft') {
+        totalQty = parseFloat(document.getElementById('calc-rft-len')?.value) || 0;
+      } else if (mode === 'l_shape') {
+        const l1 = parseFloat(document.getElementById('calc-l1')?.value) || 0;
+        const w1 = parseFloat(document.getElementById('calc-w1')?.value) || 0;
+        const l2 = parseFloat(document.getElementById('calc-l2')?.value) || 0;
+        const w2 = parseFloat(document.getElementById('calc-w2')?.value) || 0;
+        totalQty = (l1 * w1) + (l2 * w2);
+      } else if (mode === 'tank') {
+        const l = parseFloat(document.getElementById('calc-tl')?.value) || 0;
+        const w = parseFloat(document.getElementById('calc-tw')?.value) || 0;
+        const d = parseFloat(document.getElementById('calc-td')?.value) || 0;
+        totalQty = (2 * (l + w) * d) + (l * w);
+        const cubicFt = l * w * d;
+        const liters = Math.round(cubicFt * 28.317);
+        const capDiv = document.getElementById('tank-capacity-info');
+        if (capDiv) capDiv.innerText = `Water Capacity: ${liters.toLocaleString('en-IN')} Liters (${cubicFt} cu.ft)`;
+      } else if (mode === 'brickwork') {
+        const l = parseFloat(document.getElementById('brick-l')?.value) || 0;
+        const h = parseFloat(document.getElementById('brick-h')?.value) || 0;
+        const density = parseFloat(document.getElementById('brick-type')?.value) || 10;
+        const sqft = l * h;
+        totalQty = Math.round(sqft * density);
+        const bInfo = document.getElementById('brick-count-info');
+        if (bInfo) bInfo.innerText = `Total Estimated Bricks: ${totalQty.toLocaleString('en-IN')} Bricks (${sqft} Sq. Ft.)`;
+      }
+
+      const totalCost = (mode === 'brickwork') ? (totalQty / 1000) * rate : totalQty * rate;
+      const unit = mode === 'rft' ? 'RFT' : mode === 'brickwork' ? 'Bricks' : 'Sq. Ft.';
+      document.getElementById('calc-cost-display').innerText = `₹${Math.round(totalCost).toLocaleString('en-IN')} (${totalQty.toLocaleString('en-IN')} ${unit})`;
+      return { totalQty, unit, rate, totalCost: Math.round(totalCost) };
+    }
+
+    async function saveMeasurementRecord() {
+      const mode = document.getElementById('calc-mode').value;
+      const titleInput = document.getElementById('calc-title')?.value.trim();
+      const title = titleInput || (mode === 'tank' ? 'Water Tank' : mode === 'l_shape' ? 'L-Shaped Roof' : mode === 'brickwork' ? 'Brickwork Wall' : 'Measurement Record');
+      const { totalQty, unit, rate, totalCost } = calculateCost();
+
+      if (totalQty <= 0) return alert('Please enter valid dimensions.');
+
+      let details = '';
+      if (mode === 'sqft' || mode === 'l_shape') details = `${totalQty} Sq. Ft. @ ₹${rate}/sqft`;
+      else if (mode === 'rft') details = `${totalQty} RFT @ ₹${rate}/rft`;
+      else if (mode === 'tank') details = `${totalQty} Sq. Ft. Plaster/Tile Area @ ₹${rate}/sqft`;
+      else if (mode === 'brickwork') details = `${totalQty} Bricks @ ₹${rate}/1k Bricks`;
+
+      const res = await fetch('/api/measurements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          calcType: mode,
+          details,
+          totalQty: Number(totalQty) || 0,
+          unit,
+          rate: Number(rate) || 0,
+          totalCost: Number(totalCost) || 0
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert('✅ Measurement saved!');
+        fetchMeasurements();
+      } else {
+        alert(data.error || 'Failed to save record.');
+      }
+    }
+
+    async function fetchMeasurements() {
+      try {
+        const res = await fetch('/api/measurements');
+        measurementHistory = await res.json();
+        renderMeasurementHistory();
+      } catch (err) {
+        console.error('Error fetching measurements:', err);
+      }
+    }
+
+    function renderMeasurementHistory() {
+      const list = document.getElementById('calc-history-list');
+      if (!list) return;
+      list.innerHTML = '';
+      let sumCost = 0;
+
+      if (measurementHistory.length === 0) {
+        list.innerHTML = '<li class="text-center py-6 text-xs text-slate-500">No saved measurements yet.</li>';
+      }
+
+      measurementHistory.forEach(item => {
+        sumCost += Number(item.totalCost);
+        const dateStr = new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border border-slate-800';
+        li.innerHTML = `
+          <div>
+            <p class="text-xs font-bold text-slate-200 leading-tight">${item.title}</p>
+            <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${item.totalQty} ${item.unit} ${item.calcType === 'brickwork' ? `@ ₹${item.rate}/1k` : `@ ₹${item.rate}`} • ${dateStr}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-extrabold text-amber-400">₹${Number(item.totalCost).toLocaleString('en-IN')}</span>
+            <button onclick="deleteMeasurement('${item._id}')" class="text-xs text-rose-400 hover:text-rose-300">🗑️</button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+
+      document.getElementById('calc-history-total').innerText = 'Total: ₹' + sumCost.toLocaleString('en-IN');
+    }
+
+    async function deleteMeasurement(id) {
+      if (!confirm('Delete this measurement record?')) return;
+      const res = await fetch('/api/measurements/' + id, { method: 'DELETE' });
+      if (res.ok) fetchMeasurements();
+    }
+
+    function exportMeasurementsPDF() {
+      if (measurementHistory.length === 0) return alert('No measurement records saved to export.');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+
+      let grandTotalCost = 0;
+      let totalSqFt = 0;
+      let totalRft = 0;
+      let totalBricks = 0;
+
+      measurementHistory.forEach(m => {
+        grandTotalCost += Number(m.totalCost);
+        if (m.unit === 'Sq. Ft.') totalSqFt += Number(m.totalQty);
+        else if (m.unit === 'RFT') totalRft += Number(m.totalQty);
+        else if (m.unit === 'Bricks') totalBricks += Number(m.totalQty);
+      });
+
+      const cleanStr = (s) => String(s || '').replace(/[^\x00-\x7F]/g, "").trim();
+
+      doc.setFillColor(15, 23, 42); 
+      doc.rect(0, 0, 210, 36, 'F');
+      
+      doc.setFillColor(245, 158, 11); 
+      doc.rect(14, 10, 4, 16, 'F');
+
+      doc.setTextColor(245, 158, 11); 
+      doc.setFont('helvetica', 'bold'); 
+      doc.setFontSize(18);
+      doc.text("HOME CONSTRUCTION MEASUREMENTS", 22, 18);
+
+      doc.setTextColor(248, 250, 252); 
+      doc.setFontSize(10);
+      doc.text("Mistri Payment Statement & Area Breakdown", 22, 24);
+
+      doc.setFontSize(8); 
+      doc.setFont('helvetica', 'normal'); 
+      doc.setTextColor(148, 163, 184);
+      doc.text("Date: " + new Date().toLocaleDateString('en-IN'), 155, 22);
+
+      const cardY = 42;
+      doc.setFillColor(30, 41, 59); 
+      doc.setDrawColor(245, 158, 11); 
+      doc.setLineWidth(0.4);
+      doc.roundedRect(14, cardY, 182, 22, 3, 3, 'FD');
+
+      doc.setFontSize(8); 
+      doc.setFont('helvetica', 'bold'); 
+      doc.setTextColor(245, 158, 11);
+      doc.text("TOTAL ESTIMATED MISTRI PAYMENT", 20, cardY + 7);
+
+      doc.setFontSize(14); 
+      doc.setTextColor(248, 250, 252);
+      doc.text("Rs. " + grandTotalCost.toLocaleString('en-IN'), 20, cardY + 16);
+
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text("Sq Ft: " + totalSqFt.toLocaleString('en-IN') + "  |  RFT: " + totalRft.toLocaleString('en-IN') + "  |  Bricks: " + totalBricks.toLocaleString('en-IN'), 90, cardY + 16);
+
+      const tableRows = measurementHistory.map((item, i) => [
+        i + 1,
+        cleanStr(item.title),
+        cleanStr(item.calcType).toUpperCase(),
+        Number(item.totalQty).toLocaleString('en-IN') + " " + item.unit,
+        item.calcType === 'brickwork' ? "Rs. " + Number(item.rate).toLocaleString('en-IN') + "/1k" : "Rs. " + Number(item.rate).toLocaleString('en-IN'),
+        "Rs. " + Number(item.totalCost).toLocaleString('en-IN')
+      ]);
+
+      doc.autoTable({
+        startY: 70,
+        head: [['#', 'Section / Work Area', 'Mode', 'Total Measurement', 'Rate', 'Total Cost']],
+        body: tableRows,
+        theme: 'striped',
+        headStyles: { fillColor: [15, 23, 42], textColor: [245, 158, 11], fontStyle: 'bold', fontSize: 9, cellPadding: 4 },
+        bodyStyles: { fontSize: 8.5, textColor: [30, 41, 59], cellPadding: 3.5 },
+        alternateRowStyles: { fillColor: [248, 250, 252] }
+      });
+
+      doc.save('Mistri_Measurement_Statement.pdf');
+    }
+
     async function addUserTransaction(e) {
       e.preventDefault();
       const title = document.getElementById('tx-title').value.trim();
@@ -1273,219 +1567,6 @@
       });
 
       doc.save('Giftoo_Detailed_Analytics.pdf');
-    }
-
-    
-    let measurementHistory = [];
-
-    function renderCalcInputs() {
-      const mode = document.getElementById('calc-mode').value;
-      const container = document.getElementById('calc-input-container');
-      if (!container) return;
-
-      if (mode === 'sqft') {
-        container.innerHTML = `
-          <input type="text" id="calc-title" placeholder="Area Name (e.g. Living Room Floor)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Length (Feet)</label>
-              <input type="number" id="calc-l1" oninput="calculateCost()" placeholder="e.g. 20" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-            </div>
-            <div>
-              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Width (Feet)</label>
-              <input type="number" id="calc-w1" oninput="calculateCost()" placeholder="e.g. 15" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-            </div>
-          </div>
-        `;
-      } else if (mode === 'rft') {
-        container.innerHTML = `
-          <input type="text" id="calc-title" placeholder="Area Name (e.g. Boundary Wall / Skirting)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
-          <div>
-            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Total Length (Running Feet)</label>
-            <input type="number" id="calc-rft-len" oninput="calculateCost()" placeholder="e.g. 120" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-          </div>
-        `;
-      } else if (mode === 'l_shape') {
-        container.innerHTML = `
-          <input type="text" id="calc-title" placeholder="Area Name (e.g. L-Shaped Roof)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
-          <span class="text-[9px] font-extrabold text-sky-400 uppercase block">Part 1 (Section A)</span>
-          <div class="grid grid-cols-2 gap-2">
-            <input type="number" id="calc-l1" oninput="calculateCost()" placeholder="Length A (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-            <input type="number" id="calc-w1" oninput="calculateCost()" placeholder="Width A (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-          </div>
-          <span class="text-[9px] font-extrabold text-sky-400 uppercase block pt-1">Part 2 (Section B)</span>
-          <div class="grid grid-cols-2 gap-2">
-            <input type="number" id="calc-l2" oninput="calculateCost()" placeholder="Length B (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-            <input type="number" id="calc-w2" oninput="calculateCost()" placeholder="Width B (ft)" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-          </div>
-        `;
-      } else if (mode === 'tank') {
-        container.innerHTML = `
-          <input type="text" id="calc-title" placeholder="Tank Name (e.g. Underground Water Tank)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
-          <div class="grid grid-cols-3 gap-2">
-            <div>
-              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Length (ft)</label>
-              <input type="number" id="calc-tl" oninput="calculateCost()" placeholder="10" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold w-full">
-            </div>
-            <div>
-              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Width (ft)</label>
-              <input type="number" id="calc-tw" oninput="calculateCost()" placeholder="8" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold w-full">
-            </div>
-            <div>
-              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Depth (ft)</label>
-              <input type="number" id="calc-td" oninput="calculateCost()" placeholder="6" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold w-full">
-            </div>
-          </div>
-          <div id="tank-capacity-info" class="text-[10px] font-bold text-emerald-400 pt-1">Water Capacity: 0 Liters</div>
-        `;
-      }
-      
-      } else if (mode === 'brickwork') {
-        container.innerHTML = `
-          <input type="text" id="calc-title" placeholder="Wall Section Name (e.g. Outer Boundary Wall)" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2">
-          
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Wall Length (ft)</label>
-              <input type="number" id="brick-l" oninput="calculateCost()" placeholder="e.g. 30" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-            </div>
-            <div>
-              <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Wall Height (ft)</label>
-              <input type="number" id="brick-h" oninput="calculateCost()" placeholder="e.g. 10" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-            </div>
-          </div>
-
-          <div>
-            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Wall Type / Thickness</label>
-            <select id="brick-type" onchange="calculateCost()" class="w-full bg-slate-900 border border-slate-700 text-xs text-white rounded-lg p-2 font-bold">
-              <option value="10">9-inch Wall (Full Wall — ~10 Bricks/sq ft)</option>
-              <option value="5">4.5-inch Wall (Half Wall — ~5 Bricks/sq ft)</option>
-            </select>
-          </div>
-
-          <div id="brick-count-info" class="text-[10px] font-bold text-amber-400 pt-1">Total Estimated Bricks: 0 Bricks</div>
-        `;
-      }
-
-      calculateCost();
-    }
-
-    function calculateCost() {
-      const mode = document.getElementById('calc-mode').value;
-      const rate = parseFloat(document.getElementById('calc-rate')?.value) || 0;
-      let totalQty = 0;
-
-      if (mode === 'sqft') {
-        const l = parseFloat(document.getElementById('calc-l1')?.value) || 0;
-        const w = parseFloat(document.getElementById('calc-w1')?.value) || 0;
-        totalQty = l * w;
-      } else if (mode === 'rft') {
-        totalQty = parseFloat(document.getElementById('calc-rft-len')?.value) || 0;
-      } else if (mode === 'l_shape') {
-        const l1 = parseFloat(document.getElementById('calc-l1')?.value) || 0;
-        const w1 = parseFloat(document.getElementById('calc-w1')?.value) || 0;
-        const l2 = parseFloat(document.getElementById('calc-l2')?.value) || 0;
-        const w2 = parseFloat(document.getElementById('calc-w2')?.value) || 0;
-        totalQty = (l1 * w1) + (l2 * w2);
-      } else if (mode === 'tank') {
-        const l = parseFloat(document.getElementById('calc-tl')?.value) || 0;
-        const w = parseFloat(document.getElementById('calc-tw')?.value) || 0;
-        const d = parseFloat(document.getElementById('calc-td')?.value) || 0;
-        // 4 Inner Walls Area + Floor Area
-        totalQty = (2 * (l + w) * d) + (l * w);
-        const cubicFt = l * w * d;
-        const liters = Math.round(cubicFt * 28.317);
-        const capDiv = document.getElementById('tank-capacity-info');
-        if (capDiv) capDiv.innerText = `Water Capacity: ${liters.toLocaleString('en-IN')} Liters (${cubicFt} cu.ft)`;
-      }
-
-      const totalCost = totalQty * rate;
-      const unit = mode === 'rft' ? 'RFT' : 'Sq. Ft.';
-      document.getElementById('calc-cost-display').innerText = `₹${totalCost.toLocaleString('en-IN')} (${totalQty.toLocaleString('en-IN')} ${unit})`;
-      return { totalQty, unit, rate, totalCost };
-    }
-
-    async function saveMeasurementRecord() {
-      const mode = document.getElementById('calc-mode').value;
-      const titleInput = document.getElementById('calc-title')?.value.trim();
-      const title = titleInput || (mode === 'tank' ? 'Water Tank' : mode === 'l_shape' ? 'L-Shaped Roof' : 'Measurement Record');
-      const { totalQty, unit, rate, totalCost } = calculateCost();
-
-      if (totalQty <= 0) return alert('Please enter valid dimensions (Length/Width).');
-
-      let details = '';
-      if (mode === 'sqft' || mode === 'l_shape') details = `${totalQty} Sq. Ft. @ ₹${rate}/sqft`;
-      else if (mode === 'rft') details = `${totalQty} RFT @ ₹${rate}/rft`;
-      else if (mode === 'tank') details = `${totalQty} Sq. Ft. Plaster/Tile Area @ ₹${rate}/sqft`;
-
-      const res = await fetch('/api/measurements', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          calcType: mode,
-          details,
-          totalQty: Number(totalQty) || 0,
-          unit,
-          rate: Number(rate) || 0,
-          totalCost: Number(totalCost) || 0
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert('✅ Measurement saved to history!');
-        fetchMeasurements();
-      } else {
-        alert(data.error || 'Failed to save record.');
-      }
-    }
-
-    async function fetchMeasurements() {
-      try {
-        const res = await fetch('/api/measurements');
-        measurementHistory = await res.json();
-        renderMeasurementHistory();
-      } catch (err) {
-        console.error('Error fetching measurements:', err);
-      }
-    }
-
-    function renderMeasurementHistory() {
-      const list = document.getElementById('calc-history-list');
-      if (!list) return;
-      list.innerHTML = '';
-      let sumCost = 0;
-
-      if (measurementHistory.length === 0) {
-        list.innerHTML = '<li class="text-center py-6 text-xs text-slate-500">No saved measurements yet.</li>';
-      }
-
-      measurementHistory.forEach(item => {
-        sumCost += Number(item.totalCost);
-        const dateStr = new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-        const li = document.createElement('li');
-        li.className = 'flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border border-slate-800';
-        li.innerHTML = `
-          <div>
-            <p class="text-xs font-bold text-slate-200 leading-tight">${item.title}</p>
-            <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${item.totalQty} ${item.unit} @ ₹${item.rate} • ${dateStr}</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-extrabold text-amber-400">₹${Number(item.totalCost).toLocaleString('en-IN')}</span>
-            <button onclick="deleteMeasurement('${item._id}')" class="text-xs text-rose-400 hover:text-rose-300">🗑️</button>
-          </div>
-        `;
-        list.appendChild(li);
-      });
-
-      document.getElementById('calc-history-total').innerText = 'Total: ₹' + sumCost.toLocaleString('en-IN');
-    }
-
-    async function deleteMeasurement(id) {
-      if (!confirm('Delete this measurement record?')) return;
-      const res = await fetch('/api/measurements/' + id, { method: 'DELETE' });
-      if (res.ok) fetchMeasurements();
     }
 
     initSession();

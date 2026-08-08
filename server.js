@@ -12,7 +12,7 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://aryanrajpurohit33_db_u
 
 mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
   .then(() => {
-    console.log('✅ Connected permanently to MongoDB Atlas');
+    console.log('✅ Connected to MongoDB Atlas');
     updateAdminAccount();
     seedCategories();
   })
@@ -33,7 +33,6 @@ const transactionSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   type: { type: String, required: true },
   category: { type: String, required: true },
-  mainCategory: { type: String, default: "Personal" },
   isCompany: { type: Boolean, default: false },
   date: { type: Date, default: Date.now }
 });
@@ -47,16 +46,23 @@ const categorySchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true }
 });
 
-const mainCategorySchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+const measurementSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  title: { type: String, default: 'Measurement Record' },
+  calcType: { type: String, default: 'sqft' },
+  details: { type: String, default: '' },
+  totalQty: { type: Number, default: 0 },
+  unit: { type: String, default: 'Sq. Ft.' },
+  rate: { type: Number, default: 0 },
+  totalCost: { type: Number, default: 0 },
+  date: { type: Date, default: Date.now }
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
 const Subscription = mongoose.models.Subscription || mongoose.model('Subscription', subscriptionSchema);
 const Category = mongoose.models.Category || mongoose.model('Category', categorySchema);
-const MainCategory = mongoose.models.MainCategory || mongoose.model('MainCategory', mainCategorySchema);
+const Measurement = mongoose.models.Measurement || mongoose.model('Measurement', measurementSchema);
 
 async function seedCategories() {
   try {
@@ -205,37 +211,6 @@ app.delete('/api/admin/categories/:id', async (req, res) => {
   }
 });
 
-app.get('/api/main-categories', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    let list = await MainCategory.find({ userId: req.session.user.id });
-    if (list.length === 0) {
-      const defaults = ["Personal", "Home Construction", "Nekoo Operations"];
-      const created = await MainCategory.insertMany(defaults.map(name => ({ name, userId: req.session.user.id })));
-      return res.json(created);
-    }
-    res.json(list);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch main categories' });
-  }
-});
-
-app.post('/api/main-categories', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const { name } = req.body;
-    if (!name || !name.trim()) return res.status(400).json({ error: 'Name is required' });
-    const trimmed = name.trim();
-    const existing = await MainCategory.findOne({ name: trimmed, userId: req.session.user.id });
-    if (existing) return res.status(400).json({ error: 'Main category exists' });
-
-    const newCat = await MainCategory.create({ name: trimmed, userId: req.session.user.id });
-    res.json({ success: true, mainCategory: newCat });
-  } catch {
-    res.status(500).json({ error: 'Failed to add main category' });
-  }
-});
-
 app.get('/api/company-transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
   try {
@@ -349,77 +324,6 @@ app.post('/api/admin/notify', async (req, res) => {
   }
 });
 
-
-app.get('/api/measurements', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const list = await Measurement.find({ userId: req.session.user.id }).sort({ date: -1 });
-    res.json(list);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch measurements' });
-  }
-});
-
-app.post('/api/measurements', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const { title, calcType, details, totalQty, unit, rate, totalCost } = req.body;
-    const record = await Measurement.create({
-      userId: req.session.user.id,
-      title: title || 'Measurement Record',
-      calcType: calcType || 'sqft',
-      details: details || '',
-      totalQty: Number(totalQty) || 0,
-      unit: unit || 'Sq. Ft.',
-      rate: Number(rate) || 0,
-      totalCost: Number(totalCost) || 0
-    });
-    res.json({ success: true, record });
-  } catch (err) {
-    console.error('Measurement save error:', err);
-    res.status(500).json({ error: err.message || 'Failed to save measurement' });
-  }
-});
-  try {
-    const { title, calcType, details, totalQty, unit, rate, totalCost } = req.body;
-    const record = await Measurement.create({
-      userId: req.session.user.id,
-      title: title || 'Measurement Record',
-      calcType: calcType || 'sqft',
-      details: details || '',
-      totalQty: Number(totalQty) || 0,
-      unit: unit || 'Sq. Ft.',
-      rate: Number(rate) || 0,
-      totalCost: Number(totalCost) || 0
-    });
-    res.json({ success: true, record });
-  } catch (err) {
-    console.error('Measurement save error:', err);
-    res.status(500).json({ error: err.message || 'Failed to save measurement' });
-  }
-});
-  try {
-    const { title, calcType, details, totalQty, unit, rate, totalCost } = req.body;
-    const record = await Measurement.create({
-      userId: req.session.user.id,
-      title, calcType, details, totalQty, unit, rate, totalCost
-    });
-    res.json({ success: true, record });
-  } catch {
-    res.status(500).json({ error: 'Failed to save measurement' });
-  }
-});
-
-app.delete('/api/measurements/:id', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    await Measurement.deleteOne({ _id: req.params.id, userId: req.session.user.id });
-    res.json({ success: true });
-  } catch {
-    res.status(500).json({ error: 'Failed to delete measurement' });
-  }
-});
-
 app.get('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
   try {
@@ -451,7 +355,7 @@ app.get('/api/transactions', async (req, res) => {
 
     const transactions = await Transaction.find(query).sort({ date: -1, _id: -1 });
     res.json(transactions.map(t => ({
-      id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category, mainCategory: t.mainCategory || 'Personal', date: t.date
+      id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category, date: t.date
     })));
   } catch {
     res.status(500).json({ error: 'Failed to fetch transactions' });
@@ -461,7 +365,7 @@ app.get('/api/transactions', async (req, res) => {
 app.post('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
   try {
-    const { targetUserId, title, amount, type, category, date, mainCategory } = req.body;
+    const { targetUserId, title, amount, type, category, date } = req.body;
     if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Invalid amount' });
 
     let assignedUser = req.session.user;
@@ -483,7 +387,6 @@ app.post('/api/transactions', async (req, res) => {
       amount: parseFloat(amount),
       type,
       category,
-      mainCategory: mainCategory || 'Personal',
       date: selectedDate,
       isCompany: false
     });
@@ -491,6 +394,47 @@ app.post('/api/transactions', async (req, res) => {
     res.json({ success: true, transaction: newTx });
   } catch {
     res.status(500).json({ error: 'Failed to record transaction' });
+  }
+});
+
+app.get('/api/measurements', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const list = await Measurement.find({ userId: req.session.user.id }).sort({ date: -1 });
+    res.json(list);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch measurements' });
+  }
+});
+
+app.post('/api/measurements', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { title, calcType, details, totalQty, unit, rate, totalCost } = req.body;
+    const record = await Measurement.create({
+      userId: req.session.user.id,
+      title: title || 'Measurement Record',
+      calcType: calcType || 'sqft',
+      details: details || '',
+      totalQty: Number(totalQty) || 0,
+      unit: unit || 'Sq. Ft.',
+      rate: Number(rate) || 0,
+      totalCost: Number(totalCost) || 0
+    });
+    res.json({ success: true, record });
+  } catch (err) {
+    console.error('Measurement save error:', err);
+    res.status(500).json({ error: 'Failed to save measurement record' });
+  }
+});
+
+app.delete('/api/measurements/:id', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    await Measurement.deleteOne({ _id: req.params.id, userId: req.session.user.id });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: 'Failed to delete measurement' });
   }
 });
 
