@@ -366,6 +366,24 @@ app.post('/api/measurements', async (req, res) => {
     const { title, calcType, details, totalQty, unit, rate, totalCost } = req.body;
     const record = await Measurement.create({
       userId: req.session.user.id,
+      title: title || 'Measurement Record',
+      calcType: calcType || 'sqft',
+      details: details || '',
+      totalQty: Number(totalQty) || 0,
+      unit: unit || 'Sq. Ft.',
+      rate: Number(rate) || 0,
+      totalCost: Number(totalCost) || 0
+    });
+    res.json({ success: true, record });
+  } catch (err) {
+    console.error('Measurement save error:', err);
+    res.status(500).json({ error: err.message || 'Failed to save measurement' });
+  }
+});
+  try {
+    const { title, calcType, details, totalQty, unit, rate, totalCost } = req.body;
+    const record = await Measurement.create({
+      userId: req.session.user.id,
       title, calcType, details, totalQty, unit, rate, totalCost
     });
     res.json({ success: true, record });

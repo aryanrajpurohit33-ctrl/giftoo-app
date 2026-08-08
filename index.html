@@ -1382,7 +1382,7 @@
       const title = titleInput || (mode === 'tank' ? 'Water Tank' : mode === 'l_shape' ? 'L-Shaped Roof' : 'Measurement Record');
       const { totalQty, unit, rate, totalCost } = calculateCost();
 
-      if (totalQty <= 0) return alert('Please enter valid dimensions.');
+      if (totalQty <= 0) return alert('Please enter valid dimensions (Length/Width).');
 
       let details = '';
       if (mode === 'sqft' || mode === 'l_shape') details = `${totalQty} Sq. Ft. @ ₹${rate}/sqft`;
@@ -1392,14 +1392,23 @@
       const res = await fetch('/api/measurements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, calcType: mode, details, totalQty, unit, rate, totalCost })
+        body: JSON.stringify({
+          title,
+          calcType: mode,
+          details,
+          totalQty: Number(totalQty) || 0,
+          unit,
+          rate: Number(rate) || 0,
+          totalCost: Number(totalCost) || 0
+        })
       });
 
+      const data = await res.json();
       if (res.ok) {
-        alert('✅ Measurement saved!');
+        alert('✅ Measurement saved to history!');
         fetchMeasurements();
       } else {
-        alert('Failed to save record.');
+        alert(data.error || 'Failed to save record.');
       }
     }
 
