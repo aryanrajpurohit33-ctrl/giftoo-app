@@ -43,11 +43,20 @@ const subscriptionSchema = new mongoose.Schema({
   subscription: { type: Object, required: true }
 });
 
-
 const categorySchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true }
 });
+
+const mainCategorySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+});
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+const Transaction = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
+const Subscription = mongoose.models.Subscription || mongoose.model('Subscription', subscriptionSchema);
 const Category = mongoose.models.Category || mongoose.model('Category', categorySchema);
+const MainCategory = mongoose.models.MainCategory || mongoose.model('MainCategory', mainCategorySchema);
 
 async function seedCategories() {
   try {
@@ -61,20 +70,8 @@ async function seedCategories() {
   }
 }
 
-
-const mainCategorySchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-});
-const MainCategory = mongoose.models.MainCategory || mongoose.model('MainCategory', mainCategorySchema);
-
-const User = mongoose.model('User', userSchema);
-const Transaction = mongoose.model('Transaction', transactionSchema);
-const Subscription = mongoose.models.Subscription || mongoose.model('Subscription', subscriptionSchema);
-
 async function updateAdminAccount() {
   try {
-    // 1. Giftoo Admin
     let giftooAdmin = await User.findOne({ username: 'Giftoo' });
     if (giftooAdmin) {
       giftooAdmin.password = 'aditya1';
@@ -84,7 +81,6 @@ async function updateAdminAccount() {
       giftooAdmin = await User.create({ username: 'Giftoo', password: 'aditya1', role: 'admin' });
     }
 
-    // 2. Nekoo Admin
     let nekooAdmin = await User.findOne({ username: 'Nekoo' });
     if (nekooAdmin) {
       nekooAdmin.password = '5669';
@@ -94,7 +90,6 @@ async function updateAdminAccount() {
       await User.create({ username: 'Nekoo', password: '5669', role: 'admin' });
     }
 
-    // 3. Assign pre-existing unassigned users to Giftoo admin
     await User.updateMany(
       { role: 'user', $or: [{ createdBy: null }, { createdBy: { $exists: false } }] },
       { createdBy: giftooAdmin._id }
@@ -128,14 +123,9 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
 });
 
-app.get(['/', '/history', '/analytics', '/admin'], (req, res) => {
+app.get(['/', '/analytics', '/admin'], (req, res) => {
   if (!req.session.user) return res.redirect('/login');
   res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/profile', (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') return res.redirect('/');
-  res.sendFile(path.join(__dirname, 'profile.html'));
 });
 
 app.post('/api/login', async (req, res) => {
@@ -164,9 +154,7 @@ app.get('/api/session', (req, res) => {
 });
 
 app.post('/api/subscribe', async (req, res) => {
-  if (!req.session || !req.session.user) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  if (!req.session || !req.session.user) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const { subscription } = req.body;
     if (!subscription) return res.status(400).json({ error: 'Invalid subscription object' });
@@ -178,8 +166,114 @@ app.post('/api/subscribe', async (req, res) => {
     );
     return res.status(201).json({ success: true });
   } catch (err) {
-    console.error('Subscription Endpoint Error:', err);
     return res.status(500).json({ error: 'Failed to save subscription' });
+  }
+});
+
+app.get('/api/categories', async (req, res) => {
+  try {
+    const categories = await Category.find({});
+    res.json(categories);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+app.post('/api/admin/categories', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: 'Category name required' });
+    const trimmed = name.trim();
+    const existing = await Category.findOne({ name: trimmed });
+    if (existing) return res.status(400).json({ error: 'Category already exists' });
+
+    const newCategory = await Category.create({ name: trimmed });
+    res.json({ success: true, category: newCategory });
+  } catch {
+    res.status(500).json({ error: 'Failed to create category' });
+  }
+});
+
+app.delete('/api/admin/categories/:id', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  try {
+    await Category.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: 'Failed to delete category' });
+  }
+});
+
+app.get('/api/main-categories', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    let list = await MainCategory.find({ userId: req.session.user.id });
+    if (list.length === 0) {
+      const defaults = ["Personal", "Home Construction", "Nekoo Operations"];
+      const created = await MainCategory.insertMany(defaults.map(name => ({ name, userId: req.session.user.id })));
+      return res.json(created);
+    }
+    res.json(list);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch main categories' });
+  }
+});
+
+app.post('/api/main-categories', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: 'Name is required' });
+    const trimmed = name.trim();
+    const existing = await MainCategory.findOne({ name: trimmed, userId: req.session.user.id });
+    if (existing) return res.status(400).json({ error: 'Main category exists' });
+
+    const newCat = await MainCategory.create({ name: trimmed, userId: req.session.user.id });
+    res.json({ success: true, mainCategory: newCat });
+  } catch {
+    res.status(500).json({ error: 'Failed to add main category' });
+  }
+});
+
+app.get('/api/company-transactions', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const transactions = await Transaction.find({ userId: req.session.user.id, isCompany: true }).sort({ date: -1, _id: -1 });
+    res.json(transactions.map(t => ({
+      id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category, date: t.date
+    })));
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch company transactions' });
+  }
+});
+
+app.post('/api/company-transactions', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { title, amount, type, category, date } = req.body;
+    if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Invalid amount' });
+
+    let selectedDate = new Date();
+    if (date) {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate)) selectedDate = parsedDate;
+    }
+
+    const newTx = await Transaction.create({
+      userId: req.session.user.id,
+      username: req.session.user.username,
+      title: title && title.trim() !== '' ? title.trim() : category.split(' ')[0],
+      amount: parseFloat(amount),
+      type,
+      category,
+      date: selectedDate,
+      isCompany: true
+    });
+
+    res.json({ success: true, transaction: newTx });
+  } catch {
+    res.status(500).json({ error: 'Failed to record company transaction' });
   }
 });
 
@@ -221,116 +315,37 @@ app.delete('/api/admin/users/:id', async (req, res) => {
   }
 });
 
-
-app.get('/api/categories', async (req, res) => {
-  try {
-    const categories = await Category.find({});
-    res.json(categories);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch categories' });
-  }
-});
-
-app.post('/api/admin/categories', async (req, res) => {
+app.post('/api/admin/notify', async (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   try {
-    const { name } = req.body;
-    if (!name || !name.trim()) return res.status(400).json({ error: 'Category name required' });
-    const trimmed = name.trim();
-    const existing = await Category.findOne({ name: trimmed });
-    if (existing) return res.status(400).json({ error: 'Category already exists' });
+    const { targetUserId, title, message } = req.body;
+    if (!title || !message) return res.status(400).json({ error: 'Title and message are required' });
 
-    const newCategory = await Category.create({ name: trimmed });
-    res.json({ success: true, category: newCategory });
-  } catch {
-    res.status(500).json({ error: 'Failed to create category' });
-  }
-});
+    const domainUsers = await User.find({ createdBy: req.session.user.id });
+    const domainUserIds = domainUsers.map(u => u._id.toString());
 
-
-app.delete('/api/admin/categories/:id', async (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  try {
-    await Category.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
-  } catch {
-    res.status(500).json({ error: 'Failed to delete category' });
-  }
-});
-
-
-app.get('/api/company-transactions', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const transactions = await Transaction.find({ userId: req.session.user.id, isCompany: true }).sort({ date: -1, _id: -1 });
-    res.json(transactions.map(t => ({
-      id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category,
-      mainCategory: req.body.mainCategory || "Personal", date: t.date
-    })));
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch company transactions' });
-  }
-});
-
-app.post('/api/company-transactions', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const { title, amount, type, category, date } = req.body;
-    if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Invalid amount' });
-
-    let selectedDate = new Date();
-    if (date) {
-      const parsedDate = new Date(date);
-      if (!isNaN(parsedDate)) selectedDate = parsedDate;
-    }
+    let query = {};
+    if (targetUserId && targetUserId !== 'all' && domainUserIds.includes(targetUserId)) {
+      query.userId = targetUserId;
+    } else {
+      query.userId = { $in: domainUserIds };
     }
 
-    const newTx = await Transaction.create({
-      userId: req.session.user.id,
-      username: req.session.user.username,
-      title: title && title.trim() !== '' ? title.trim() : category.split(' ')[0],
-      amount: parseFloat(amount),
-      type,
-      category,
-      date: selectedDate,
-      isCompany: true
-    });
+    const subs = await Subscription.find(query);
+    if (subs.length === 0) return res.status(404).json({ error: 'No active push subscriptions found' });
 
-    res.json({ success: true, transaction: newTx });
-  } catch {
-    res.status(500).json({ error: 'Failed to record company transaction' });
-  }
-});
-
-
-app.get('/api/main-categories', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    let list = await MainCategory.find({ userId: req.session.user.id });
-    if (list.length === 0) {
-      const defaults = ["Personal", "Home Construction", "Nekoo Operations"];
-      const created = await MainCategory.insertMany(defaults.map(name => ({ name, userId: req.session.user.id })));
-      return res.json(created);
+    const payload = JSON.stringify({ title: title.trim(), body: message.trim() });
+    let successCount = 0;
+    for (let subRecord of subs) {
+      try {
+        await webpush.sendNotification(subRecord.subscription, payload);
+        successCount++;
+      } catch (e) {}
     }
-    res.json(list);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch main categories' });
-  }
-});
 
-app.post('/api/main-categories', async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const { name } = req.body;
-    if (!name || !name.trim()) return res.status(400).json({ error: 'Name is required' });
-    const trimmed = name.trim();
-    const existing = await MainCategory.findOne({ name: trimmed, userId: req.session.user.id });
-    if (existing) return res.status(400).json({ error: 'Main category exists' });
-
-    const newCat = await MainCategory.create({ name: trimmed, userId: req.session.user.id });
-    res.json({ success: true, mainCategory: newCat });
-  } catch {
-    res.status(500).json({ error: 'Failed to add main category' });
+    res.json({ success: true, count: successCount });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to dispatch notification' });
   }
 });
 
@@ -338,13 +353,11 @@ app.get('/api/transactions', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const { userId, filter } = req.query;
-    let query = {};
+    let query = { isCompany: { $ne: true } };
 
     if (req.session.user.role !== 'admin') {
-      // Regular user sees only their own
-      query.userId = req.session.user.id; query.isCompany = { $ne: true };
+      query.userId = req.session.user.id;
     } else {
-      // Admin sees only users created by this admin + admin's own transactions
       const domainUsers = await User.find({ createdBy: req.session.user.id });
       const domainUserIds = domainUsers.map(u => u._id.toString());
       domainUserIds.push(req.session.user.id);
@@ -367,8 +380,44 @@ app.get('/api/transactions', async (req, res) => {
 
     const transactions = await Transaction.find(query).sort({ date: -1, _id: -1 });
     res.json(transactions.map(t => ({
-      id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category, date: t.date
+      id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category, mainCategory: t.mainCategory || 'Personal', date: t.date
     })));
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch transactions' });
+  }
+});
+
+app.post('/api/transactions', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { targetUserId, title, amount, type, category, date, mainCategory } = req.body;
+    if (!amount || isNaN(amount)) return res.status(400).json({ error: 'Invalid amount' });
+
+    let assignedUser = req.session.user;
+    if (req.session.user.role === 'admin' && targetUserId) {
+      const foundUser = await User.findById(targetUserId);
+      if (foundUser) assignedUser = { id: foundUser._id.toString(), username: foundUser.username };
+    }
+
+    let selectedDate = new Date();
+    if (date) {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate)) selectedDate = parsedDate;
+    }
+
+    const newTx = await Transaction.create({
+      userId: assignedUser.id,
+      username: assignedUser.username,
+      title: title && title.trim() !== '' ? title.trim() : category.split(' ')[0],
+      amount: parseFloat(amount),
+      type,
+      category,
+      mainCategory: mainCategory || 'Personal',
+      date: selectedDate,
+      isCompany: false
+    });
+
+    res.json({ success: true, transaction: newTx });
   } catch {
     res.status(500).json({ error: 'Failed to record transaction' });
   }
