@@ -33,6 +33,7 @@ const transactionSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   type: { type: String, required: true },
   category: { type: String, required: true },
+  mainCategory: { type: String, default: "Personal" },
   isCompany: { type: Boolean, default: false },
   date: { type: Date, default: Date.now }
 });
@@ -59,6 +60,13 @@ async function seedCategories() {
     console.error("Category seed error:", err);
   }
 }
+
+
+const mainCategorySchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+});
+const MainCategory = mongoose.models.MainCategory || mongoose.model('MainCategory', mainCategorySchema);
 
 const User = mongoose.model('User', userSchema);
 const Transaction = mongoose.model('Transaction', transactionSchema);
@@ -256,7 +264,8 @@ app.get('/api/company-transactions', async (req, res) => {
   try {
     const transactions = await Transaction.find({ userId: req.session.user.id, isCompany: true }).sort({ date: -1, _id: -1 });
     res.json(transactions.map(t => ({
-      id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category, date: t.date
+      id: t._id, userId: t.userId, username: t.username, title: t.title, amount: t.amount, type: t.type, category: t.category,
+      mainCategory: req.body.mainCategory || "Personal", date: t.date
     })));
   } catch {
     res.status(500).json({ error: 'Failed to fetch company transactions' });
@@ -274,6 +283,7 @@ app.post('/api/company-transactions', async (req, res) => {
       const parsedDate = new Date(date);
       if (!isNaN(parsedDate)) selectedDate = parsedDate;
     }
+    }
 
     const newTx = await Transaction.create({
       userId: req.session.user.id,
@@ -289,6 +299,38 @@ app.post('/api/company-transactions', async (req, res) => {
     res.json({ success: true, transaction: newTx });
   } catch {
     res.status(500).json({ error: 'Failed to record company transaction' });
+  }
+});
+
+
+app.get('/api/main-categories', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    let list = await MainCategory.find({ userId: req.session.user.id });
+    if (list.length === 0) {
+      const defaults = ["Personal", "Home Construction", "Nekoo Operations"];
+      const created = await MainCategory.insertMany(defaults.map(name => ({ name, userId: req.session.user.id })));
+      return res.json(created);
+    }
+    res.json(list);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch main categories' });
+  }
+});
+
+app.post('/api/main-categories', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: 'Name is required' });
+    const trimmed = name.trim();
+    const existing = await MainCategory.findOne({ name: trimmed, userId: req.session.user.id });
+    if (existing) return res.status(400).json({ error: 'Main category exists' });
+
+    const newCat = await MainCategory.create({ name: trimmed, userId: req.session.user.id });
+    res.json({ success: true, mainCategory: newCat });
+  } catch {
+    res.status(500).json({ error: 'Failed to add main category' });
   }
 });
 

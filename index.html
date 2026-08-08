@@ -107,6 +107,20 @@
           </select>
         </div>
 
+        <!-- Main Category Selector -->
+        <div>
+          <label class="text-[9px] font-extrabold text-sky-400 uppercase block mb-1">Target Project / Main Category</label>
+          <div class="flex gap-2">
+            <select id="tx-main-category" class="flex-1 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-bold">
+              <option value="Personal">Personal 👤</option>
+              <option value="Home Construction">Home Construction 🏠</option>
+            </select>
+            <button type="button" onclick="openMainCategoryModal()" class="bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs px-2.5 rounded-lg font-bold">
+              + New
+            </button>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
           <select id="tx-category" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
             <option value="Rikshaw 🛺">Rikshaw 🛺</option>
@@ -538,13 +552,10 @@
 
     function setupDateLimits() {
       const todayStr = new Date().toISOString().split('T')[0];
-      const pastWeek = new Date(); pastWeek.setDate(pastWeek.getDate() - 7);
-      const pastWeekStr = pastWeek.toISOString().split('T')[0];
-
       const d1 = document.getElementById('tx-date');
       const d2 = document.getElementById('assign-date');
-      if (d1) { d1.value = todayStr; d1.max = todayStr; d1.min = pastWeekStr; }
-      if (d2) { d2.value = todayStr; d2.max = todayStr; d2.min = pastWeekStr; }
+      if (d1 && !d1.value) { d1.value = todayStr; d1.removeAttribute('max'); d1.removeAttribute('min'); }
+      if (d2 && !d2.value) { d2.value = todayStr; d2.removeAttribute('max'); d2.removeAttribute('min'); }
     }
 
     
@@ -586,6 +597,7 @@
         setupDateLimits();
         document.getElementById('bottom-nav').classList.remove('hidden');
         fetchTransactions();
+        fetchMainCategories();
 
         if (currentUser.username.toLowerCase() === 'nekoo' || currentUser.role === 'admin') {
           const cTab = document.getElementById('tab-company');
@@ -934,7 +946,7 @@
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, amount, type, category, date })
+        body: JSON.stringify({ title, amount, type, category, date, mainCategory: document.getElementById('tx-main-category')?.value || 'Personal' })
       });
 
       if (res.ok) {
@@ -1264,7 +1276,68 @@
       }
     }
 
+    
+    async function fetchMainCategories() {
+      try {
+        const res = await fetch('/api/main-categories');
+        const mainCats = await res.json();
+        const sel = document.getElementById('tx-main-category');
+        if (sel) {
+          sel.innerHTML = '';
+          mainCats.forEach(mc => {
+            sel.appendChild(new Option(mc.name, mc.name));
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching main categories:', err);
+      }
+    }
+
+    function openMainCategoryModal() {
+      document.getElementById('main-cat-modal').classList.remove('hidden');
+    }
+
+    function closeMainCategoryModal() {
+      document.getElementById('main-cat-modal').classList.add('hidden');
+    }
+
+    async function createMainCategory(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-main-cat-name').value.trim();
+      if (!name) return;
+
+      const res = await fetch('/api/main-categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+
+      if (res.ok) {
+        document.getElementById('new-main-cat-name').value = '';
+        closeMainCategoryModal();
+        fetchMainCategories();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to add main category');
+      }
+    }
+
     initSession();
   </script>
+
+  <!-- CREATE MAIN CATEGORY MODAL -->
+  <div id="main-cat-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card p-5 rounded-2xl w-full max-w-xs space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+        <h3 class="text-xs font-extrabold text-sky-400">Add Main Category / Project</h3>
+        <button onclick="closeMainCategoryModal()" class="text-slate-400 font-bold text-xs">✕</button>
+      </div>
+      <form onsubmit="createMainCategory(event)" class="space-y-2.5">
+        <input type="text" id="new-main-cat-name" required placeholder="e.g. Home Construction 🏠" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+        <button type="submit" class="w-full bg-sky-500 text-slate-950 font-extrabold py-2.5 rounded-lg text-xs">Save Category</button>
+      </form>
+    </div>
+  </div>
+
 </body>
 </html>
